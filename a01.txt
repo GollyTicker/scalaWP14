@@ -1,0 +1,62 @@
+
+
+
+1.
+
+scala> val ls = List()
+ls: List[Nothing] = List()
+
+scala> 3.0 :: () :: 2.0F :: 1L :: 'a' :: (1:Int) :: ls
+res6: List[AnyVal] = List(3.0, (), 2.0, 1, a, 1)
+
+scala> "Hallo" :: 3.0 :: () :: 2.0F :: 1L :: 'a' :: (1:Int) :: ls
+res7: List[Any] = List(Hallo, 3.0, (), 2.0, 1, a, 1)
+
+Bei einer leeren Liste scheint Scala den Typ "Nothing" für den Typ
+der Elemente zu nehmen. Es ist zu vermuten, dass Nothing ein spezieller Typ
+ist, der mit jedem Typ kombinierbar ist und den jeweils anderen Typ ergibt.
+List[Nothing] concat List[A] = List[A]
+
+AnyVal sammelt die gemeinsamkeiten der numerischen bzw. nicht-numerischen Value-Types zusammen.
+
+Any ist der allgemeinste Typ. alle Objekte erben von Any.
+Da String und das numerische Anyval nicht vereinbar sind,
+zieht sich scala auf Any zurück.
+
+Immutable?
+Weil mit val deklariert.
+
+Persistent?
+-
+
+Covariant?
+Kovarianz bezeichnet die Konversion eines Types in einen spezielleren Typ.
+Eine solche Konversion wäre z.B. von Double zu Float.
+
+
+==================================================================
+
+2.
+Das Int-Array:
+scala> val ls = (3 to 19).toArray
+res11: Array[Int] = Array(3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19)
+
+Elemente mit dem Index von 3 bis 10:
+scala> ls.slice(3,11)
+res15: Array[Int] = Array(6, 7, 8, 9, 10, 11, 12, 13)
+
+Alle durch drei teilbare Elemente:
+scala> ls filter((x:Int) => x % 3 == 0)
+res0: Array[Int] = Array(3, 6, 9, 12, 15, 18)
+
+Zwischensummen:
+scala> ls.scanLeft(0) { _+_ }
+res16: Array[Int] = Array(0, 3, 7, 12, 18, 25, 33, 42, 52, 63, 75, 88, 102, 117, 133, 150, 168, 187)
+ 
+Array mit indizierten Elementen:
+scala> ls.zipWithIndex.drop(10)
+res24: Array[(Int, Int)] = Array((13,10), (14,11), (15,12), (16,13), (17,14), (18,15), (19,16))
+
+Nun mit vertauschten Elementen:
+ls.zipWithIndex.drop(10).map( x => x.swap )
+res37: Array[(Int, Int)] = Array((10,13), (11,14), (12,15), (13,16), (14,17), (15,18), (16,19))
