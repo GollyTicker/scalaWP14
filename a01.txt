@@ -52,7 +52,7 @@ res0: Array[Int] = Array(3, 6, 9, 12, 15, 18)
 Zwischensummen:
 scala> ls.scanLeft(0) { _+_ }
 res16: Array[Int] = Array(0, 3, 7, 12, 18, 25, 33, 42, 52, 63, 75, 88, 102, 117, 133, 150, 168, 187)
- 
+
 Array mit indizierten Elementen:
 scala> ls.zipWithIndex.drop(10)
 res24: Array[(Int, Int)] = Array((13,10), (14,11), (15,12), (16,13), (17,14), (18,15), (19,16))
