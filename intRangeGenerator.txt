@@ -1,0 +1,6 @@
+scala> import java.util._
+import java.util._
+
+scala> def intGenerator(from:Int, to:Int)=
+     | from + Math.abs(new Random().nextInt) % (to - from + 1)
+intGenerator: (from: Int, to: Int)Int

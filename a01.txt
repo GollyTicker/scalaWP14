@@ -27,7 +27,11 @@ Immutable?
 Weil mit val deklariert.
 
 Persistent?
--
+Das Anfügen neuer Elemente erzeugt keine neue Liste,
+sondern es wird einfach ein Node erzeugt welcher auf den
+Beginn der alten Liste zeigt. Persistenz stellt sicher,
+dass die neue Liste immer den korrekten Wert zu jedem
+Zeitpunkt haben wird.
 
 Covariant?
 Kovarianz bezeichnet die Konversion eines Types in einen spezielleren Typ.
@@ -42,8 +46,8 @@ scala> val ls = (3 to 19).toArray
 res11: Array[Int] = Array(3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19)
 
 Elemente mit dem Index von 3 bis 10:
-scala> ls.slice(3,11)
-res15: Array[Int] = Array(6, 7, 8, 9, 10, 11, 12, 13)
+scala> ls.slice(3,10)
+res15: Array[Int] = Array(6, 7, 8, 9, 10, 11, 12)
 
 Alle durch drei teilbare Elemente:
 scala> ls filter((x:Int) => x % 3 == 0)
@@ -58,5 +62,5 @@ scala> ls.zipWithIndex.drop(10)
 res24: Array[(Int, Int)] = Array((13,10), (14,11), (15,12), (16,13), (17,14), (18,15), (19,16))
 
 Nun mit vertauschten Elementen:
-ls.zipWithIndex.drop(10).map( x => x.swap )
+scala> ls.zipWithIndex.drop(10).map( x => x.swap )
 res37: Array[(Int, Int)] = Array((10,13), (11,14), (12,15), (13,16), (14,17), (15,18), (16,19))

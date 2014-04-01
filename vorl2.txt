@@ -1,0 +1,57 @@
+
+
+scala> class Prv private(val str:String)
+defined class Prv
+
+scala> new Prv("dsf")
+<console>:12: error: constructor Prv in class Prv cannot be accessed in object $
+iw
+              new Prv("dsf")
+
+=====================================================
+
+Value-Klassen:
+
+scala> case class Student(name:String, nr:Int)
+defined class Student
+
+scala> val a = Student("sdf",10)
+a: Student = Student(sdf,10)
+
+scala> val b = Student("sdf",13)
+b: Student = Student(sdf,13)
+
+=====================================================
+
+== und eq.
+
+scala> val a = Student("sdf",10)
+a: Student = Student(sdf,10)
+
+scala> val b = Student("sdf",10)
+b: Student = Student(sdf,10)
+
+scala> a==b
+res24: Boolean = true
+
+scala> a eq b
+res25: Boolean = false
+
+
+=====================================================
+
+Neue Werte mit leicht anderen Values:
+scala> val c = b.copy("neu")
+c: Student = Student(neu,10)
+
+scala> c
+res26: Student = Student(neu,10)
+
+=======================================================
+scala> val iArr:Array[Int] = Array(1,2,4,5)
+iArr: Array[Int] = Array(1, 2, 4, 5)
+
+scala> iArr(0)=45
+
+scala> iArr
+res30: Array[Int] = Array(45, 2, 4, 5)
