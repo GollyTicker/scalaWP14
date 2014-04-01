@@ -9,7 +9,6 @@ trait Shape {
   val basePoint: Point
 }
 
-
 trait ClosedShape extends Shape {
   val area: Double
 }
@@ -39,6 +38,7 @@ case class Circle(center: Point, r: Double) extends ClosedShape {
   val area:Double = r*r*Pi
 }
 
+// lösung sollte ohne rect, sondern mit Anonymen Klassen sein.
 case class Rect(topleft:Point, botright:Point) extends ClosedShape {
   val basePoint = topleft
   import scala.math.abs
