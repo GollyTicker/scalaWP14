@@ -22,6 +22,11 @@ object PolyA3{
     val p5= Polynom((50,10))
 
     test( (p1 + p2)(1), 12 )
+    test( (p2 * p3)(-1), -16)
+
+    println(p2)
+    println(p3)
+    println(p2 * p3)
   }
 
 
@@ -30,60 +35,75 @@ object PolyA3{
 class Polynom private (csAssoc: List[Pair[Int,Int]] ) {
   // (coefficient, exponent)
 
+  // remember, the index at which the elemen lies indicates that coefficients exponent
+  // so Vector(7,1,4,2) means 7 + x + 4x^2 + 2x^3
   val cs: Vector[Int] = fromAssocList(csAssoc)
 
   def fromAssocList(as:List[Pair[Int,Int]]):Vector[Int] = {
-
     val maxC:Int = as.maxBy(_._2)._2 + 1 // the plus 1 is because the zero counts as a coefficient
     val poly:Array[Int] = new Array[Int](maxC) // the new keyword prevents a single element Array
-    as.foreach( (tpl) => tpl match { case (c, exp) => require(exp >= 0); poly(exp) = c} )
+    // if multiple coefficients are assigned to an exponent,
+    // then all of them are added together
+    as.foreach( (tpl) => tpl match { case (c, exp) => require(exp >= 0); poly(exp) += c} )
     poly.toVector
   }
 
-
+  // calculate the value at x
   def apply (x: Int) = cs.foldRight(0) ((c, accu) => accu * x + c)
 
+  def addTrailingZeros(cs:Vector[Int], remaining:Int):Vector[Int] = cs.++( (new Array[Int](remaining)).toVector )
+
+  // Addition of two polynoms
   def + (p: Polynom):Polynom = {
-    /*import scala.math._
-    val maxC:Int = max(this.cs.length, p.cs.length)
-    val newPoly = for {
-      i <- (0 to maxC)
-      newC = this.cs(i) + p.cs(i)
-    } yield (newC, i)
-    */
-    def withFixedLengths(c1:Vector[Int], c2:Vector[Int]):Vector[Int] = c1.zip(c2).map( (tpl) => tpl._1 + tpl._2 )
-    def addTrailingZeros(cs:Vector[Int], remaining:Int):Vector[Int] = cs.++( (new Array[Int](remaining)).toVector )
-
+    def addPolynoms(c1:Vector[Int], c2:Vector[Int]):Vector[Int] = c1.zip(c2).map( (tpl) => tpl._1 + tpl._2 )
+    // first we extends the smaller lists length with trailing zeros()
+    // this then allows for addPolynoms() to safely traverse both lists
     val lenDiff = p.cs.length - cs.length
-
     val newCS = if (lenDiff < 0) {
         val cs2 = addTrailingZeros(p.cs, -lenDiff)
-        withFixedLengths(cs, cs2)
+          addPolynoms(cs, cs2)
       }
         else {
           val csFixed = addTrailingZeros(cs, lenDiff)
-          withFixedLengths(csFixed, p.cs)
+          addPolynoms(csFixed, p.cs)
         }
-    new Polynom(newCS.zipWithIndex.toList)
+    Polynom.fromVector(newCS.zipWithIndex)
   }
-  def * (p: Polynom) = p
-  def ° (p: Polynom) = p
+
+  // Multiplication of two polynoms
+  def * (p: Polynom) = {  // lol, mult is so many times smaller than plus
+    val ls = for {
+      (c1, exp1) <- cs.zipWithIndex
+      (c2, exp2) <- p.cs.zipWithIndex
+      (newC, newExp) = (c1*c2, exp1+exp2) // benefits of Haskell-Do-Notation
+    } yield (newC, newExp)
+    Polynom.fromVector(ls)
+  }
+  def ° (p: Polynom) = p  // TODO
 
   override def toString():String = {
-    def step(str:String, tpl:Pair[Int,Int]):String =  tpl._1.toString() + "x^" + tpl._2.toString() + " " + str
+    def step(str:String, tpl:Pair[Int,Int]):String =  tpl._1.toString() + "x^" + tpl._2.toString() + " + " + str
     cs.zipWithIndex
       .foldLeft("")((a, b) => step(a, b)) // bad IDEA warning. Idea is very buggy...
   }
-
 }
 
 
 object Polynom {
+  // the cFirst in both of these apply methods forces the caller to give atleast one argument.
   def apply (cFirst: Int, csRest: Int *) = {
     val cs = cFirst :: csRest.toList
+    // we make a association List out of the given coefficients
+    // because the most significant coefficient appears at front,
+    // we have to reverse the list before assigning the exponent
     val withExponents = cs.reverse.zipWithIndex
     new Polynom(withExponents)
   }
   def apply (cFirst: Pair[Int, Int], cs: Pair[Int, Int]* ) = new Polynom (cFirst :: cs.toList)
+
+  def fromList(cs:List[Pair[Int,Int]]):Polynom = new Polynom(cs)
+  def fromVector(cs:Vector[Pair[Int,Int]]):Polynom = new Polynom(cs.toList)
+
+
 
 }
