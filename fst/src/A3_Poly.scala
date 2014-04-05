@@ -2,13 +2,7 @@
  * Created by Swaneet on 05.04.2014.
  */
 object PolyA3{
-  def test(a: Any, b: Any) = {
-    val tpl = if (a == b)
-      (" == ", "")
-    else (" /= ", "\nExpected: " + a + "\nResult:" + b)
-    println(a.toString() + tpl._1.toString() + b.toString() + tpl._2.toString())
-  }
-
+  // takea run at this
   def run() {
     val myPoly = Polynom(4,14,(-2),15)
     test(myPoly(3), 243)
@@ -29,19 +23,26 @@ object PolyA3{
     println(p2 * p3)
   }
 
-
+  // helper function to display test results
+  def test(a: Any, b: Any) = {
+    val tpl = if (a == b)
+      (" == ", "")
+    else (" /= ", "\nExpected: " + a + "\nResult:" + b)
+    println(a.toString() + tpl._1.toString() + b.toString() + tpl._2.toString())
+  }
 }
 
 class Polynom private (csAssoc: List[Pair[Int,Int]] ) {
-  // (coefficient, exponent)
+                          // List((coefficient, exponent))
 
-  // remember, the index at which the elemen lies indicates that coefficients exponent
+  // the index at which the element lies indicates that coefficients exponent
   // so Vector(7,1,4,2) means 7 + x + 4x^2 + 2x^3
   val cs: Vector[Int] = fromAssocList(csAssoc)
 
   def fromAssocList(as:List[Pair[Int,Int]]):Vector[Int] = {
     val maxC:Int = as.maxBy(_._2)._2 + 1 // the plus 1 is because the zero counts as a coefficient
-    val poly:Array[Int] = new Array[Int](maxC) // the new keyword prevents a single element Array
+    val poly:Array[Int] = new Array[Int](maxC) // the new keyword makes an Array of tthis length, instead of a singleton Array
+
     // if multiple coefficients are assigned to an exponent,
     // then all of them are added together
     as.foreach( (tpl) => tpl match { case (c, exp) => require(exp >= 0); poly(exp) += c} )
@@ -71,7 +72,7 @@ class Polynom private (csAssoc: List[Pair[Int,Int]] ) {
   }
 
   // Multiplication of two polynoms
-  def * (p: Polynom) = {  // lol, mult is so many times smaller than plus
+  def * (p: Polynom):Polynom = {  // lol, mult is so many times smaller than plus
     val ls = for {
       (c1, exp1) <- cs.zipWithIndex
       (c2, exp2) <- p.cs.zipWithIndex
@@ -81,7 +82,17 @@ class Polynom private (csAssoc: List[Pair[Int,Int]] ) {
   }
 
   // Polynon composition
-  def ° (p: Polynom) = p  // TODO
+  def ° (p: Polynom):Polynom = {
+    for {
+      (c, exp) <- p.cs.zipWithIndex  // using the second argument here, because function composition has flipped arguments
+      partialPol = Polynom(a) * (p ^ exp)
+
+    }
+  }
+
+  def ^ (exp:Int):Polynom {
+
+  }
 
   override def toString():String = {
     cs
