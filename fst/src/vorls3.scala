@@ -78,5 +78,6 @@ object Cust {
 }
 // abc(1,2,3) => abc.apply(1,2,3)
 // Funktion und Lambda
-
+// referentielle Transparenz
+// referentielle Transparenz => pure Funktion (wenn man f(x) = y 1:1 durcheinander ersetzten kann)
 
