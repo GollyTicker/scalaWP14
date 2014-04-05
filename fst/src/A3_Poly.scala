@@ -52,12 +52,12 @@ class Polynom private (csAssoc: List[Pair[Int,Int]] ) {
     } yield (newC, i)
     */
     def withFixedLengths(c1:Vector[Int], c2:Vector[Int]):Vector[Int] = c1.zip(c2).map( (tpl) => tpl._1 + tpl._2 )
-    def addTrailingZeros(cs:Vector[Int], remaining:Int):Vector[Int] = cs.++:( (new Array[Int](remaining)).toVector )
+    def addTrailingZeros(cs:Vector[Int], remaining:Int):Vector[Int] = cs.++( (new Array[Int](remaining)).toVector )
 
     val lenDiff = p.cs.length - cs.length
 
     val newCS = if (lenDiff < 0) {
-        val cs2 = addTrailingZeros(p.cs, lenDiff)
+        val cs2 = addTrailingZeros(p.cs, -lenDiff)
         withFixedLengths(cs, cs2)
       }
         else {
