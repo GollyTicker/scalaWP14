@@ -79,12 +79,16 @@ class Polynom private (csAssoc: List[Pair[Int,Int]] ) {
     } yield (newC, newExp)
     Polynom.fromVector(ls)
   }
+
+  // Polynon composition
   def ° (p: Polynom) = p  // TODO
 
   override def toString():String = {
-    def step(str:String, tpl:Pair[Int,Int]):String =  tpl._1.toString() + "x^" + tpl._2.toString() + " + " + str
-    cs.zipWithIndex
-      .foldLeft("")((a, b) => step(a, b)) // bad IDEA warning. Idea is very buggy...
+    cs
+      .zipWithIndex
+      .reverse
+      .map( (tpl) => tpl._1.toString() + "x^" + tpl._2.toString()) // bad IDEA warning. Idea is very buggy...
+      .mkString(" + ")
   }
 }
 
