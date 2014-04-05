@@ -10,7 +10,7 @@ object PolyA3{
   }
 
   def run() {
-    val myPoly = Polynom(1,2,3,4)
+    val myPoly = Polynom(4,14,(-2),15)
 
     println("myPoly:" + myPoly)
     println("myPoly(3):" + myPoly(3))
@@ -25,26 +25,30 @@ class Polynom private (csAssoc: List[Pair[Int,Int]] ) {
   val len = cs.length
 
   def fromAssocList(as:List[Pair[Int,Int]]):Vector[Int] = {
-          // (exponent, coefficient)
+          // (coefficient, exponent)
     println("AssocList: " + as)
 
-    val maxC:Int = as.maxBy(_._1)._1 + 1 // the plus 1 is because the zero counts as a coefficient
+    val maxC:Int = as.maxBy(_._2)._2 + 1 // the plus 1 is because the zero counts as a coefficient
     val poly:Array[Int] = new Array[Int](maxC) // the new keyword prevents a single element Array
     println("intArray: " + poly.deep)
-    as.foreach( (tpl) => tpl match { case (exp, c) => require(exp >= 0); println("got: " + tpl);poly(exp) = c} )
-    val c=poly.toVector.reverse
+    as.foreach( (tpl) => tpl match { case (c, exp) => require(exp >= 0); poly(exp) = c} )
+    val c=poly.toVector
     println("Vector: " + c)
     c
   }
 
 
-  def apply (x: Int) = cs.foldRight(0) ((a, c) => a * x + c)
+  def apply (x: Int) = cs.foldRight(0) ((c, accu) => accu * x + c)
 
   def + (p: Polynom) = p
   def * (p: Polynom) = p
   def ° (p: Polynom) = p
 
-  override def toString = cs.toString //(cs.zipWithIndex.foldLeft ( ("", 0) ) ( (strExp, c) => (c + "x^" + strExp._2 + " " + strExp._1, strExp._2 + 1))) ._1
+  override def toString():String = {
+    def step(str:String, tpl:Pair[Int,Int]):String =  tpl._1.toString() + "x^" + tpl._2.toString() + " " + str
+    cs.zipWithIndex
+      .foldLeft("")((a, b) => step(a, b))
+  }
 
 }
 
@@ -52,7 +56,7 @@ class Polynom private (csAssoc: List[Pair[Int,Int]] ) {
 object Polynom {
   def apply (cFirst: Int, csRest: Int *) = {
     val cs = cFirst :: csRest.toList
-    val withExponents = cs.reverse.zipWithIndex.map(_.swap)
+    val withExponents = cs.reverse.zipWithIndex
     new Polynom(withExponents)
   }
   def apply (cFirst: Pair[Int, Int], cs: Pair[Int, Int]* ) = new Polynom (cFirst :: cs.toList)
