@@ -4,11 +4,24 @@
 object PolyA3 {
   // take a run at this with scala> PolyA3.run
   def run() {
+    var failed = false
+    // helper function to display test results
+    def test(a: Any, b: Any) = {
+      val tpl = if (a == b) {
+        (" == ", "")
+      }
+      else {
+        failed = true
+        (" /= ", "\nExpected: " + a + "\nResult:" + b)
+      }
+      println(a.toString() + tpl._1.toString() + b.toString() + tpl._2.toString())
+    }
+
     println(" ========== Swaneet =========== ")
     val myPoly = Polynom(4, 14, (-2), 15)
     test(myPoly(3), 243)
     println( Polynom(2,1,0,-1,-1,0,1) + Polynom( (3,11) ) )
-    println(Polynom(1) ° Polynom(1))
+    println(Polynom.ONE ° Polynom.ONE)
 
     println(" ========== Esser =========== ")
 
@@ -20,10 +33,11 @@ object PolyA3 {
     val p4 = Polynom( -1, 1, -10 )
     val p5 = Polynom( (10, 50) )  // care! This is swaped! Compare to Essers version
 
-    test(zero, Polynom( 0 ))
-    test(one, Polynom( 1 ))
-    test( zero ° p2, Polynom(0))
-    test( p2 ° zero, Polynom(1))
+    test(zero, Polynom.ZERO)  // Polynom(0)
+    test(one, Polynom.ONE)    // Polynom(1)
+    test( zero ° p2, Polynom.ZERO)
+    test( p2 ° zero, Polynom(1))    // I didnt write Polynom.ONE here, because the multiplical identity, that is 1, isnt
+                                    // the reason that 1 is the result. Its because p2(0) happens to be 1.
     test( p2 ° p3, Polynom( (108, 6), (567,4), (996,2), (586,0) ))
     test( p2 * p3, Polynom( (12,5), (9,4), (26,3), (18,2), (10,1), (5,0) ) )
     test( (p2 ° p3)(-1), 2257)
@@ -37,15 +51,14 @@ object PolyA3 {
     test( (p1*p2)(1), 20)
     test( (p2*p1)(1), 20)
     test( p5, Polynom( (10,50) ))
+
+    val p6 = Polynom(4,3,2,1)*Polynom(1,2,3,4)
+    test( p6(-1), -4 )
+    test( p6, Polynom( 4, 11, 20, 30, 20, 11, 4 ) )
+
+    println( "Testcases " + (if (failed) "failed." else "succeeded.") )
   }
 
-  // helper function to display test results
-  def test(a: Any, b: Any) = {
-    val tpl = if (a == b)
-      (" == ", "")
-    else (" /= ", "\nExpected: " + a + "\nResult:" + b)
-    println(a.toString() + tpl._1.toString() + b.toString() + tpl._2.toString())
-  }
 }
 
 // utilities to calculate with Polynoms
@@ -104,17 +117,17 @@ class Polynom private(csAssoc: List[Pair[Int, Int]]) {
   def °(p: Polynom): Polynom = {
     cs
       .zipWithIndex
-      .map((tpl) => tpl match {
+      .map((tpl) => tpl match { // insert the right polynom as an argument for the first polynom. note the similarity to this.apply(x)
           case (c, exp) => Polynom(c) * (p ^ exp)
         })
-      .fold(Polynom(0))(_ + _)
+      .fold(Polynom.ZERO)(_ + _)    // we dont need to fold form right here, because the exponent is inside the tuple itself
   }
 
   // calculates a Polynom to an non-negative integral power
   def ^(exp: Int): Polynom = {
     // using a simple non-logarithmic power function.
     require(exp >= 0)
-    if (exp == 0) Polynom(1)
+    if (exp == 0) Polynom.ONE
     else this * (this ^ (exp - 1))
   }
 
@@ -153,7 +166,7 @@ class Polynom private(csAssoc: List[Pair[Int, Int]]) {
       }
     }
 
-    if (Polynom(0) == this) return "0"  // exception for the null Polynom
+    if (this == Polynom.ZERO) return "0"  // exception for the null Polynom
 
     cs
       .zipWithIndex // add exponents
@@ -183,9 +196,12 @@ object Polynom {
     new Polynom(withExponents)
   }
 
-  def apply(cFirst: Pair[Int, Int], cs: Pair[Int, Int]*) = new Polynom( (cFirst :: cs.toList).map(_.swap) )
+  def apply(cFirst: Pair[Int, Int], cs: Pair[Int, Int]*) = new Polynom( cFirst :: cs.toList )
 
   def fromList(cs: List[Pair[Int, Int]]): Polynom = new Polynom(cs)
 
   def fromVector(cs: Vector[Pair[Int, Int]]): Polynom = new Polynom(cs.toList)
+
+  lazy val ZERO:Polynom = Polynom(0)
+  lazy val ONE:Polynom = Polynom(1)
 }
