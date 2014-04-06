@@ -58,6 +58,7 @@ class Polynom private(csAssoc: List[Pair[Int, Int]]) {
 
   // the index at which the element lies indicates that coefficients exponent
   // so Vector(7,1,4,2) means 7 + x + 4x^2 + 2x^3
+  // its called cs because its CoefficientS
   val cs: Vector[Int] = fromAssocList(csAssoc)
 
   def fromAssocList(as: List[Pair[Int, Int]]): Vector[Int] = {
@@ -121,10 +122,17 @@ class Polynom private(csAssoc: List[Pair[Int, Int]]) {
     lazy val xs:Vector[Int] = p.asInstanceOf[Polynom].cs  // lazyness prevents this form being
             // calculated until its really needed. This only happens, when the first
             // condition evaluates true and thus the object is a polynom
-    p.isInstanceOf[Polynom] && cs.zip(xs).forall( tpl => tpl._1 == tpl._2 )
+
+    def shorten(ys:Vector[Int]):Vector[Int] = ys
+                                                .reverse
+                                                .dropWhile( _ == 0)
+                                                .reverse
+
+    p.isInstanceOf[Polynom] && shorten(cs) == shorten(xs)
   }
 
   override def toString(): String = {
+
     def step(tpl: Pair[Int, Int]): String = {
       val c = tpl._1
       val exp = tpl._2
@@ -135,6 +143,7 @@ class Polynom private(csAssoc: List[Pair[Int, Int]]) {
         case 3 => "x³" */
         case e => "x^" + e
       }
+
       c match {
         case 0 => "" // ommit a zero summand
         case 1 if exp == 0 => "1" // write "1" insteadt of "" for 1*x^0
@@ -143,6 +152,8 @@ class Polynom private(csAssoc: List[Pair[Int, Int]]) {
         case c => c + expStr
       }
     }
+
+    if (Polynom(0) == this) return "0"  // exception for the null Polynom
 
     cs
       .zipWithIndex // add exponents
