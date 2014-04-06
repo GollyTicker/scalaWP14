@@ -7,6 +7,10 @@ object PolyA3 {
     val myPoly = Polynom(4, 14, (-2), 15)
     test(myPoly(3), 243)
     println( Polynom(2,1,0,-1,-1,0,1) + Polynom( (3,11) ) )
+    println(Polynom(1) ° Polynom(1))
+
+
+    println(" ========== Esser =========== ")
 
     val zero = Polynom(0)
     val one = Polynom(0, 0, 0, 1)
@@ -16,15 +20,23 @@ object PolyA3 {
     val p4 = Polynom(-1, 1, -10)
     val p5 = Polynom((50, 10))
 
-    test((p1 + p2)(1), 12)
-    test((p2 * p3)(-1), -16)
-    test((p2 ° p3)(-1), 2257)
+    println(zero +", "+one)
 
-    println(p2)
-    println(p3)
-    println(p2 * p3)
+    test(zero ° p2, Polynom(0))
+    /*println(p2 ° zero)
     println(p2 ° p3)
-    println(Polynom(1) ° Polynom(1))
+    println(p2 * p3)
+    println((p2 ° p3)(-1))
+    println((p2 * p3)(-1))
+    println(p1 * p2)
+    println(p3*p4)
+    println(p1 +" + "+p2 + " = "+ (p1+p2))
+    println((p1+p2)(1))
+    println(p1°p2 +"(1)= "+(p1°p2)(1))
+    println(p2°p1 +"(1)= "+(p2°p1)(1))
+    println((p1*p2)(1))
+    println((p2*p1)(1))
+    println(p5)*/
   }
 
   // helper function to display test results
@@ -101,8 +113,9 @@ class Polynom private(csAssoc: List[Pair[Int, Int]]) {
     else this * (this ^ (exp - 1))
   }
 
-  override def toString(): String = {
+  override def equals(p:Any):Boolean = p.isInstanceOf[Polynom] && cs == p.asInstanceOf[Polynom].cs
 
+  override def toString(): String = {
     def step(tpl: Pair[Int, Int]): String = {
       val c = tpl._1
       val exp = tpl._2
@@ -114,6 +127,7 @@ class Polynom private(csAssoc: List[Pair[Int, Int]]) {
         case e => "x^" + e
       }
       c match {
+        case 0 if exp == 0 => "0" // ommit a zero summand
         case 0 => "" // ommit a zero summand
         case 1 if exp == 0 => "1" // write "1" insteadt of "" for 1*x^0
         case 1 => expStr  // write "x^n" instead of "1x^n"
