@@ -2,41 +2,41 @@
  * Created by Swaneet on 05.04.2014.
  */
 object PolyA3 {
-  // take a run at this
+  // take a run at this with scala> PolyA3.run
   def run() {
+    println(" ========== Swaneet =========== ")
     val myPoly = Polynom(4, 14, (-2), 15)
     test(myPoly(3), 243)
     println( Polynom(2,1,0,-1,-1,0,1) + Polynom( (3,11) ) )
     println(Polynom(1) ° Polynom(1))
 
-
     println(" ========== Esser =========== ")
 
-    val zero = Polynom(0)
-    val one = Polynom(0, 0, 0, 1)
-    val p1 = Polynom(0, 0, 0, 1, 1)
-    val p2 = Polynom(4, 3, 2, 1)
-    val p3 = Polynom(3, 0, 5)
-    val p4 = Polynom(-1, 1, -10)
-    val p5 = Polynom((50, 10))
+    val zero = Polynom( 0 )
+    val one = Polynom( 0, 0, 0, 1 )
+    val p1 = Polynom( 0, 0, 0, 1, 1 )
+    val p2 = Polynom( 4, 3, 2, 1 )
+    val p3 = Polynom( 3, 0, 5 )
+    val p4 = Polynom( -1, 1, -10 )
+    val p5 = Polynom( (10, 50) )  // care! This is swaped! Compare to Essers version
 
-    println(zero +", "+one)
-
-    test(zero ° p2, Polynom(0))
-    /*println(p2 ° zero)
-    println(p2 ° p3)
-    println(p2 * p3)
-    println((p2 ° p3)(-1))
-    println((p2 * p3)(-1))
-    println(p1 * p2)
-    println(p3*p4)
-    println(p1 +" + "+p2 + " = "+ (p1+p2))
-    println((p1+p2)(1))
-    println(p1°p2 +"(1)= "+(p1°p2)(1))
-    println(p2°p1 +"(1)= "+(p2°p1)(1))
-    println((p1*p2)(1))
-    println((p2*p1)(1))
-    println(p5)*/
+    test(zero, Polynom( 0 ))
+    test(one, Polynom( 1 ))
+    test( zero ° p2, Polynom(0))
+    test( p2 ° zero, Polynom(1))
+    test( p2 ° p3, Polynom( (108, 6), (567,4), (996,2), (586,0) ))
+    test( p2 * p3, Polynom( (12,5), (9,4), (26,3), (18,2), (10,1), (5,0) ) )
+    test( (p2 ° p3)(-1), 2257)
+    test( (p2 * p3)(-1), -16)
+    test( p1 * p2, Polynom( 4, 7, 5, 3, 1 ))
+    test( p3*p4, Polynom( -3, 3, -35, 5, -50 ))
+    test( p1+p2, Polynom( 4, 3, 3, 2 ) )
+    test( (p1+p2)(1), 12)
+    test( (p1°p2)(1), 11)
+    test( (p2°p1)(1), 49)
+    test( (p1*p2)(1), 20)
+    test( (p2*p1)(1), 20)
+    test( p5, Polynom( (10,50) ))
   }
 
   // helper function to display test results
@@ -75,7 +75,8 @@ class Polynom private(csAssoc: List[Pair[Int, Int]]) {
   // Addition of two polynoms
   def plus(p: Polynom): Polynom = this + p
   def +(p: Polynom): Polynom = {
-    val newCS = p.cs.zipWithIndex ++ cs.zipWithIndex // we can simply concatenate the lists, because the constructor adds multiple coefficients the same exponent
+    // we can simply concatenate the lists, because the constructor adds multiple coefficients the same exponent
+    val newCS = p.cs.zipWithIndex ++ cs.zipWithIndex
     Polynom.fromVector(newCS)
   }
 
@@ -100,8 +101,8 @@ class Polynom private(csAssoc: List[Pair[Int, Int]]) {
     cs
       .zipWithIndex
       .map((tpl) => tpl match {
-      case (c, exp) => Polynom(c) * (p ^ exp)
-    })
+          case (c, exp) => Polynom(c) * (p ^ exp)
+        })
       .fold(Polynom(0))(_ + _)
   }
 
@@ -152,6 +153,9 @@ class Polynom private(csAssoc: List[Pair[Int, Int]]) {
 
 object Polynom {
   // the cFirst in both of these apply methods forces the caller to give atleast one argument.
+
+  // the creator methode with tuples has its integers switched.
+  // I ALWAYS use (coefficient, exponent) for tuple usage
   def apply(cFirst: Int, csRest: Int*) = {
     val cs = cFirst :: csRest.toList
     // we make a association List out of the given coefficients
@@ -161,7 +165,7 @@ object Polynom {
     new Polynom(withExponents)
   }
 
-  def apply(cFirst: Pair[Int, Int], cs: Pair[Int, Int]*) = new Polynom(cFirst :: cs.toList)
+  def apply(cFirst: Pair[Int, Int], cs: Pair[Int, Int]*) = new Polynom( (cFirst :: cs.toList).map(_.swap) )
 
   def fromList(cs: List[Pair[Int, Int]]): Polynom = new Polynom(cs)
 
