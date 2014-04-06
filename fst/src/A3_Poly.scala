@@ -51,6 +51,9 @@ object PolyA3 {
 // utilities to calculate with Polynoms
 // only integral coefficients and non-negative exponents are allowed.
 class Polynom private(csAssoc: List[Pair[Int, Int]]) {
+  // csAssoc stands for an association list. a very primitve Map.
+  // usually the key is the first element and the value is the second
+  // however, for convinience, this has been swapped here.
   // List((coefficient, exponent))
 
   // the index at which the element lies indicates that coefficients exponent
@@ -87,7 +90,7 @@ class Polynom private(csAssoc: List[Pair[Int, Int]]) {
     // benefits of Haskell-Do-Notation
     val ls = for {
       (c1, exp1) <- cs.zipWithIndex
-      (c2, exp2) <- p.cs.zipWithIndex
+      (c2, exp2) <- p.cs.zipWithIndex   // multiply every term with every other
       (newC, newExp) = (c1 * c2, exp1 + exp2)
     } yield (newC, newExp)
     Polynom.fromVector(ls)
@@ -115,8 +118,10 @@ class Polynom private(csAssoc: List[Pair[Int, Int]]) {
   }
 
   override def equals(p:Any):Boolean = {
-    def xs:Vector[Int] = p.asInstanceOf[Polynom].cs.dropWhile( _ == 0) // drop leading zeros
-    p.isInstanceOf[Polynom] && cs == xs
+    lazy val xs:Vector[Int] = p.asInstanceOf[Polynom].cs  // lazyness prevents this form being
+            // calculated until its really needed. This only happens, when the first
+            // condition evaluates true and thus the object is a polynom
+    p.isInstanceOf[Polynom] && cs.zip(xs).forall( tpl => tpl._1 == tpl._2 )
   }
 
   override def toString(): String = {
@@ -131,7 +136,6 @@ class Polynom private(csAssoc: List[Pair[Int, Int]]) {
         case e => "x^" + e
       }
       c match {
-        case 0 if exp == 0 => "0" // ommit a zero summand
         case 0 => "" // ommit a zero summand
         case 1 if exp == 0 => "1" // write "1" insteadt of "" for 1*x^0
         case 1 => expStr  // write "x^n" instead of "1x^n"
