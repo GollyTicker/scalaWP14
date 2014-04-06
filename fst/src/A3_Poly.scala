@@ -17,10 +17,12 @@ object PolyA3 {
 
     test((p1 + p2)(1), 12)
     test((p2 * p3)(-1), -16)
+    test( (p2 ° p3)(-1), 2257)
 
     println(p2)
     println(p3)
     println(p2 * p3)
+    println(p2 ° p3)
   }
 
   // helper function to display test results
@@ -32,6 +34,8 @@ object PolyA3 {
   }
 }
 
+// utilities to calculate with Polynoms
+// only integral coefficients and non-negative exponents are allowed.
 class Polynom private(csAssoc: List[Pair[Int, Int]]) {
   // List((coefficient, exponent))
 
@@ -40,13 +44,13 @@ class Polynom private(csAssoc: List[Pair[Int, Int]]) {
   val cs: Vector[Int] = fromAssocList(csAssoc)
 
   def fromAssocList(as: List[Pair[Int, Int]]): Vector[Int] = {
+    // calculate the highest exponent and therefore the length of the array/vector
     val maxC: Int = as.maxBy(_._2)._2 + 1 // the plus 1 is because the zero counts as a coefficient
-    val poly: Array[Int] = new Array[Int](maxC) // the new keyword makes an Array of tthis length, instead of a singleton Array
-
+    val poly: Array[Int] = new Array[Int](maxC) // the new keyword makes an Array (of zeroes) of maxC length, instead of a singleton Array
     // if multiple coefficients are assigned to an exponent,
     // then all of them are added together
     as.foreach((tpl) => tpl match {
-      case (c, exp) => require(exp >= 0); poly(exp) += c
+      case (c, exp) => require(exp >= 0); poly(exp) += c // the coefficient at the position is added
     })
     poly.toVector
   }
@@ -54,59 +58,63 @@ class Polynom private(csAssoc: List[Pair[Int, Int]]) {
   // calculate the value at x
   def apply(x: Int) = cs.foldRight(0)((c, accu) => accu * x + c)
 
-  def addTrailingZeros(cs: Vector[Int], remaining: Int): Vector[Int] = cs.++((new Array[Int](remaining)).toVector)
-
   // Addition of two polynoms
   def +(p: Polynom): Polynom = {
-    def addPolynoms(c1: Vector[Int], c2: Vector[Int]): Vector[Int] = c1.zip(c2).map((tpl) => tpl._1 + tpl._2)
-    // first we extends the smaller lists length with trailing zeros()
-    // this then allows for addPolynoms() to safely traverse both lists
-    val lenDiff = p.cs.length - cs.length
-    val newCS = if (lenDiff < 0) {
-      val cs2 = addTrailingZeros(p.cs, -lenDiff)
-      addPolynoms(cs, cs2)
-    }
-    else {
-      val csFixed = addTrailingZeros(cs, lenDiff)
-      addPolynoms(csFixed, p.cs)
-    }
+    val newCS = p.cs ++ cs // we can simply concatenate the lists, because the constructor adds multiple coefficients the same exponent
     Polynom.fromVector(newCS.zipWithIndex)
   }
 
   // Multiplication of two polynoms
   def *(p: Polynom): Polynom = {
-    // lol, mult is so many times smaller than plus
+    // benefits of Haskell-Do-Notation
     val ls = for {
       (c1, exp1) <- cs.zipWithIndex
       (c2, exp2) <- p.cs.zipWithIndex
-      (newC, newExp) = (c1 * c2, exp1 + exp2) // benefits of Haskell-Do-Notation
+      (newC, newExp) = (c1 * c2, exp1 + exp2)
     } yield (newC, newExp)
     Polynom.fromVector(ls)
   }
 
   // Polynon composition
-  /*def °(p: Polynom):Polynom = {
-    for {
-      (c, exp) <- p.cs.zipWithIndex // using the second argument here, because function composition has flipped arguments
-      partialPol = Polynom(c) * (p ^ exp)
-      // TODO: implementaiton and tests
-    }
-    Polynom.fromList(Nil)
-  }*/
+  def °(p: Polynom): Polynom = {
+    cs
+      .zipWithIndex
+      .map( (tpl) => tpl match {
+                      case (c, exp) => Polynom(c) * (p ^ exp)
+                    } )
+      .fold(Polynom(0))(_ + _)
+  }
 
   // calculates a Polynom to an non-negative integral power
-  def ^ (exp: Int):Polynom = { // usaing a simple non-logarithmic power function.
+  def ^(exp: Int): Polynom = {
+    // using a simple non-logarithmic power function.
     require(exp >= 0)
-    if (exp == 0) Polynom (1)
-      else this * (this ^ (exp - 1) )
+    if (exp == 0) Polynom(1)
+    else this * (this ^ (exp - 1))
   }
 
   override def toString(): String = {
+
+    def step(tpl:Pair[Int, Int]):String = {
+      val c = tpl._1
+      val exp = tpl._2
+      val expStr = exp match {
+        case 0 => ""
+        case 1 => "x"
+        /*case 2 => "x²"  // unreadable on screen
+        case 3 => "x³" */
+        case e => "x^" + e
+      }
+      if (c == 0) ""  // ommit a zero summand
+          else c.toString() + expStr
+    }
+
     cs
-      .zipWithIndex
-      .reverse
-      .map((tpl) => tpl._1.toString() + "x^" + tpl._2.toString()) // bad IDEA warning. Idea is very buggy...
-      .mkString(" + ")
+      .zipWithIndex // add exponents
+      .reverse      // staert with highest exponent
+      .map( x => step(x)) // make strings
+      .filter( _ != "" )  // filter zero summands
+      .mkString(" + ")    // join with "+"
   }
 }
 
@@ -127,6 +135,4 @@ object Polynom {
   def fromList(cs: List[Pair[Int, Int]]): Polynom = new Polynom(cs)
 
   def fromVector(cs: Vector[Pair[Int, Int]]): Polynom = new Polynom(cs.toList)
-
-
 }
