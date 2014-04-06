@@ -2,7 +2,7 @@
  * Created by Swaneet on 05.04.2014.
  */
 object PolyA3 {
-  // takea run at this
+  // take a run at this
   def run() {
     val myPoly = Polynom(4, 14, (-2), 15)
     test(myPoly(3), 243)
@@ -17,12 +17,13 @@ object PolyA3 {
 
     test((p1 + p2)(1), 12)
     test((p2 * p3)(-1), -16)
-    test( (p2 ° p3)(-1), 2257)
+    test((p2 ° p3)(-1), 2257)
 
     println(p2)
     println(p3)
     println(p2 * p3)
     println(p2 ° p3)
+    println(Polynom(1) ° Polynom(1))
   }
 
   // helper function to display test results
@@ -64,6 +65,8 @@ class Polynom private(csAssoc: List[Pair[Int, Int]]) {
     Polynom.fromVector(newCS.zipWithIndex)
   }
 
+  def plus(p: Polynom): Polynom = this + p
+
   // Multiplication of two polynoms
   def *(p: Polynom): Polynom = {
     // benefits of Haskell-Do-Notation
@@ -75,15 +78,20 @@ class Polynom private(csAssoc: List[Pair[Int, Int]]) {
     Polynom.fromVector(ls)
   }
 
+  def mult(p: Polynom): Polynom = this * p
+
   // Polynon composition
+  // (g ° f) = (g after f) = ( x => g(f(x)) )
   def °(p: Polynom): Polynom = {
     cs
       .zipWithIndex
-      .map( (tpl) => tpl match {
-                      case (c, exp) => Polynom(c) * (p ^ exp)
-                    } )
+      .map((tpl) => tpl match {
+      case (c, exp) => Polynom(c) * (p ^ exp)
+    })
       .fold(Polynom(0))(_ + _)
   }
+
+  def after(p: Polynom): Polynom = this ° p
 
   // calculates a Polynom to an non-negative integral power
   def ^(exp: Int): Polynom = {
@@ -95,7 +103,7 @@ class Polynom private(csAssoc: List[Pair[Int, Int]]) {
 
   override def toString(): String = {
 
-    def step(tpl:Pair[Int, Int]):String = {
+    def step(tpl: Pair[Int, Int]): String = {
       val c = tpl._1
       val exp = tpl._2
       val expStr = exp match {
@@ -105,16 +113,20 @@ class Polynom private(csAssoc: List[Pair[Int, Int]]) {
         case 3 => "x³" */
         case e => "x^" + e
       }
-      if (c == 0) ""  // ommit a zero summand
-          else c.toString() + expStr
+      if (c == 0) "" // ommit a zero summand
+      else c.toString() + expStr
     }
 
     cs
       .zipWithIndex // add exponents
-      .reverse      // staert with highest exponent
-      .map( x => step(x)) // make strings
-      .filter( _ != "" )  // filter zero summands
-      .mkString(" + ")    // join with "+"
+      .reverse // staert with highest exponent
+      .map(x => step(x)) // make strings
+      .filter(_ != "") // filter zero summands
+      .mkString(" + ") // join with "+"
+
+    // if scala collections functions were lazy by default,
+    // this composition of functions would only need
+    // a single traversal instead of iterating 5 times
   }
 }
 
