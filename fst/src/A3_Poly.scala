@@ -114,7 +114,10 @@ class Polynom private(csAssoc: List[Pair[Int, Int]]) {
     else this * (this ^ (exp - 1))
   }
 
-  override def equals(p:Any):Boolean = p.isInstanceOf[Polynom] && cs == p.asInstanceOf[Polynom].cs
+  override def equals(p:Any):Boolean = {
+    def xs:Vector[Int] = p.asInstanceOf[Polynom].cs.dropWhile( _ == 0) // drop leading zeros
+    p.isInstanceOf[Polynom] && cs == xs
+  }
 
   override def toString(): String = {
     def step(tpl: Pair[Int, Int]): String = {
