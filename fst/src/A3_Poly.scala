@@ -92,9 +92,8 @@ class Polynom private(csAssoc: List[Pair[Int, Int]]) {
   // Addition of two polynoms
   def plus(p: Polynom): Polynom = this + p
   def +(p: Polynom): Polynom = {
-    // we can simply concatenate the lists, because the constructor adds multiple coefficients the same exponent
-    val newCS = p.cs.zipWithIndex ++ cs.zipWithIndex
-    Polynom.fromVector(newCS)
+    // we can simply concatenate the lists, because the constructor adds multiple coefficients of the same exponent
+    Polynom.fromVector( p.cs.zipWithIndex ++ cs.zipWithIndex )
   }
 
 
@@ -111,7 +110,7 @@ class Polynom private(csAssoc: List[Pair[Int, Int]]) {
   }
 
 
-  // Polynon composition
+  // Polynom composition
   // (g ° f) = (g after f) = ( x => g(f(x)) )
   def after(p: Polynom): Polynom = this ° p
   def °(p: Polynom): Polynom = {
@@ -125,16 +124,21 @@ class Polynom private(csAssoc: List[Pair[Int, Int]]) {
 
   // calculates a Polynom to an non-negative integral power
   def ^(exp: Int): Polynom = {
-    // using a simple non-logarithmic power function.
+    // using a logarithmic power function.
+    def even(x:Int):Boolean = x % 2 == 0
     require(exp >= 0)
-    if (exp == 0) Polynom.ONE
-    else this * (this ^ (exp - 1))
+    exp match {
+      case 0 => Polynom.ONE
+      case 2 => this * this   // need this shortcut. else we get infinite recursion for polynom^2
+      case x if even(x) => (this ^ (x / 2)) ^ 2   // benefits of operator overloading
+      case x => (this ^ (x - 1)) * this // exp is odd. delegate to the lower even number
+    }
   }
 
   override def equals(p:Any):Boolean = {
     lazy val xs:Vector[Int] = p.asInstanceOf[Polynom].cs  // lazyness prevents this form being
             // calculated until its really needed. This only happens, when the first
-            // condition evaluates true and thus the object is a polynom
+            // condition evaluates true and it becomes safe to ask for cs
 
     def shorten(ys:Vector[Int]):Vector[Int] = ys
                                                 .reverse
@@ -168,22 +172,20 @@ class Polynom private(csAssoc: List[Pair[Int, Int]]) {
 
     if (this == Polynom.ZERO) return "0"  // exception for the null Polynom
 
-    cs
-      .zipWithIndex // add exponents
-      .reverse // staert with highest exponent
-      .map(x => step(x)) // make strings
-      .filter(_ != "") // filter zero summands
-      .mkString(" + ") // join with "+"
-
     // if scala collections functions were lazy by default,
     // this composition of functions would only need
     // a single traversal instead of iterating 5 times
+    cs
+      .zipWithIndex // add exponents
+      .reverse // start with highest exponent
+      .map(x => step(x)) // make strings
+      .filter(_ != "") // reject nullified summands
+      .mkString(" + ") // join with "+"
   }
 }
 
 
 object Polynom {
-  // the cFirst in both of these apply methods forces the caller to give atleast one argument.
 
   // the creator methode with tuples has its integers switched.
   // I ALWAYS use (coefficient, exponent) for tuple usage
@@ -192,16 +194,16 @@ object Polynom {
     // we make a association List out of the given coefficients
     // because the most significant coefficient appears at front,
     // we have to reverse the list before assigning the exponent
-    val withExponents = cs.reverse.zipWithIndex
-    new Polynom(withExponents)
+    new Polynom(cs.reverse.zipWithIndex)
   }
 
+  // the cFirst in both of these apply methods forces the caller to give atleast one argument.
   def apply(cFirst: Pair[Int, Int], cs: Pair[Int, Int]*) = new Polynom( cFirst :: cs.toList )
 
   def fromList(cs: List[Pair[Int, Int]]): Polynom = new Polynom(cs)
 
   def fromVector(cs: Vector[Pair[Int, Int]]): Polynom = new Polynom(cs.toList)
 
-  lazy val ZERO:Polynom = Polynom(0)
-  lazy val ONE:Polynom = Polynom(1)
+  lazy val ZERO:Polynom = Polynom(0)  // identity of Polynom addition and annihilator of multiplication
+  lazy val ONE:Polynom = Polynom(1)   // identity of multiplication
 }
