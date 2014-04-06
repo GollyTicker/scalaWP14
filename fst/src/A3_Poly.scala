@@ -6,6 +6,7 @@ object PolyA3 {
   def run() {
     val myPoly = Polynom(4, 14, (-2), 15)
     test(myPoly(3), 243)
+    println( Polynom(2,1,0,-1,-1,0,1) + Polynom( (3,11) ) )
 
     val zero = Polynom(0)
     val one = Polynom(0, 0, 0, 1)
@@ -60,14 +61,15 @@ class Polynom private(csAssoc: List[Pair[Int, Int]]) {
   def apply(x: Int) = cs.foldRight(0)((c, accu) => accu * x + c)
 
   // Addition of two polynoms
+  def plus(p: Polynom): Polynom = this + p
   def +(p: Polynom): Polynom = {
-    val newCS = p.cs ++ cs // we can simply concatenate the lists, because the constructor adds multiple coefficients the same exponent
-    Polynom.fromVector(newCS.zipWithIndex)
+    val newCS = p.cs.zipWithIndex ++ cs.zipWithIndex // we can simply concatenate the lists, because the constructor adds multiple coefficients the same exponent
+    Polynom.fromVector(newCS)
   }
 
-  def plus(p: Polynom): Polynom = this + p
 
   // Multiplication of two polynoms
+  def mult(p: Polynom): Polynom = this * p
   def *(p: Polynom): Polynom = {
     // benefits of Haskell-Do-Notation
     val ls = for {
@@ -78,10 +80,10 @@ class Polynom private(csAssoc: List[Pair[Int, Int]]) {
     Polynom.fromVector(ls)
   }
 
-  def mult(p: Polynom): Polynom = this * p
 
   // Polynon composition
   // (g ° f) = (g after f) = ( x => g(f(x)) )
+  def after(p: Polynom): Polynom = this ° p
   def °(p: Polynom): Polynom = {
     cs
       .zipWithIndex
@@ -90,8 +92,6 @@ class Polynom private(csAssoc: List[Pair[Int, Int]]) {
     })
       .fold(Polynom(0))(_ + _)
   }
-
-  def after(p: Polynom): Polynom = this ° p
 
   // calculates a Polynom to an non-negative integral power
   def ^(exp: Int): Polynom = {
@@ -113,8 +113,13 @@ class Polynom private(csAssoc: List[Pair[Int, Int]]) {
         case 3 => "x³" */
         case e => "x^" + e
       }
-      if (c == 0) "" // ommit a zero summand
-      else c.toString() + expStr
+      c match {
+        case 0 => "" // ommit a zero summand
+        case 1 if exp == 0 => "1" // write "1" insteadt of "" for 1*x^0
+        case 1 => expStr  // write "x^n" instead of "1x^n"
+        case -1 => "-" + expStr  // write "-x^n" instead of "-1x^n"
+        case c => c + expStr
+      }
     }
 
     cs
