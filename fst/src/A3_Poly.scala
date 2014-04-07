@@ -86,9 +86,6 @@ class Polynom private(csAssoc: List[Pair[Int, Int]]) {
     poly.toVector
   }
 
-  // calculate the value at x
-  def apply(x: Int) = cs.foldRight(0)((c, accu) => accu * x + c)
-
   // Addition of two polynoms
   def plus(p: Polynom): Polynom = this + p
   def +(p: Polynom): Polynom = {
@@ -112,17 +109,18 @@ class Polynom private(csAssoc: List[Pair[Int, Int]]) {
 
   // Polynom composition
   // (g ° f) = (g after f) = ( x => g(f(x)) )
+  // Horner's Method: http://en.wikipedia.org/wiki/Horner%27s_method
   def after(p: Polynom): Polynom = this ° p
-  def °(p: Polynom): Polynom = {
-    cs
-      .zipWithIndex
-      .map((tpl) => tpl match { // insert the right polynom as an argument for the first polynom. note the similarity to this.apply(x)
-          case (c, exp) => Polynom(c) * (p ^ exp)
-        })
-      .fold(Polynom.ZERO)(_ + _)    // we dont need to fold form right here, because the exponent is inside the tuple itself
-  }
+  def °(p: Polynom): Polynom = cs.foldRight(Polynom.ZERO)( (c, accu) => Polynom(c) + p * accu)
+                              // note the similarities to the apply(x) function.
+                              // effectively, we'Re just inserting a polynom into another polynom.
+
+  // calculate the value at x
+  // Horner's Method: http://en.wikipedia.org/wiki/Horner%27s_method
+  def apply(x: Int) = cs.foldRight(0)((c, accu) => c + x * accu)
 
   // calculates a Polynom to an non-negative integral power
+  // not really needed now.
   def ^(exp: Int): Polynom = {
     // using a logarithmic power function.
     def even(x:Int):Boolean = x % 2 == 0
