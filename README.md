@@ -1,1 +1,1 @@
-Java - shit + Haskell = Scala
+Java -> Scala -> Haskell
