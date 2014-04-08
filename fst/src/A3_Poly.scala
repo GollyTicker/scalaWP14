@@ -111,13 +111,13 @@ class Polynom private(csAssoc: List[Pair[Int, Int]]) {
   // (g ° f) = (g after f) = ( x => g(f(x)) )
   // Horner's Method: http://en.wikipedia.org/wiki/Horner%27s_method
   def after(p: Polynom): Polynom = this ° p
-  def °(p: Polynom): Polynom = cs.foldRight(Polynom.ZERO)( (c, accu) => Polynom(c) + p * accu)
+  def °(p: Polynom): Polynom = cs.foldRight(Polynom.ZERO)( Polynom(_) + p * _)  //
                               // note the similarities to the apply(x) function.
                               // effectively, we'Re just inserting a polynom into another polynom.
 
   // calculate the value at x
   // Horner's Method: http://en.wikipedia.org/wiki/Horner%27s_method
-  def apply(x: Int) = cs.foldRight(0)((c, accu) => c + x * accu)
+  def apply(x: Int) = cs.foldRight(0)( _ + x * _)
 
   // calculates a Polynom to an non-negative integral power
   // not really needed now.
