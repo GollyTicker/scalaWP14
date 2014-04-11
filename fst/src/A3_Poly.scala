@@ -113,7 +113,7 @@ class Polynom private(csAssoc: List[Pair[Int, Int]]) {
   def after(p: Polynom): Polynom = this ° p
   def °(p: Polynom): Polynom = cs.foldRight(Polynom.ZERO)( Polynom(_) + p * _)  //
                               // note the similarities to the apply(x) function.
-                              // effectively, we'Re just inserting a polynom into another polynom.
+                              // effectively, we're just inserting a polynom into another polynom.
 
   // calculate the value at x
   // Horner's Method: http://en.wikipedia.org/wiki/Horner%27s_method
