@@ -43,6 +43,49 @@ object A {
   }
 }
 
+object A1 {
+  def distance(tpl:(Int,Int)):Int = {
+    val c1 = tpl._1
+    val c2 = tpl._2
+
+    val diff = if (c1>c2) c1 - c2 else c2 - c1
+    100 / diff
+  }
+
+  def shortestRoute(ls:List[Int]):(Int, List[Int]) = {
+    require( ! ls.isEmpty )
+    def calcDist(ps:List[Int]):(Int, List[Int]) = {
+      // calculate the distance between consecutive elements and sum the distances
+      val dist = ps.zip(ps.tail).map( distance _ ).sum
+      (dist, ps)
+    }
+    ls
+      .permutations     // all Tours
+      .map( calcDist )  // assign a cost to each tour
+      .minBy( _._1 )    // take the minimal cost. (miyBy already take the first if there are multiple minima)
+  }
+}
+
+object A2 {
+
+  // in the Run Length Encoding methods the second element in the tuple
+  // represents the number of consecutive occurences of that singleton.
+
+  def RLE[A](xs:List[A]):List[(A, Int)] = group(xs).map( x => (x.head, x.size))
+
+  // how come this isnt in scala.List.immutable?
+  // groups equal elements together: "AAffeDD" => ["AA", "ff", "e", "DD"]
+  def group[A](xs:List[A]):List[List[A]]= xs match {
+    case Nil => List()
+    case _ => {
+      val fst = xs.head
+      val tpl = xs.span(_ == fst) // xs.span(f) == (xs takeWhile f, xs dropWhile f)
+      tpl._1 :: group(tpl._2)
+    }
+  }
+
+}
+
 object A4 {
 
   case class Person(name: String)
@@ -72,45 +115,5 @@ object A4 {
 }
 
 
-object A2 {
 
-  // in the Run Length Encoding methods the second element in the tuple
-  // represents the number of consecutive occurences of that singleton.
-
-  def RLE[A](xs:List[A]):List[(A, Int)] = group(xs).map( x => (x.head, x.size))
-
-  // how come this isnt in scala List immutable?
-  // groups equal elements together: "AAffeDD" => ["AA", "ff", "e", "DD"]
-  def group[A](xs:List[A]):List[List[A]]= xs match {
-    case Nil => List()
-    case _ => {
-      val fst = xs.head
-      val tpl = xs.span(_ == fst)
-      tpl._1 :: group(tpl._2)
-    }
-  }
-
-}
-
-object A1 {
-  def distance(tpl:(Int,Int)):Int = {
-    val c1 = tpl._1
-    val c2 = tpl._2
-
-    val diff = if (c1>c2) c1 - c2 else c2 - c1
-    100 / diff
-  }
-
-  def shortestRoute(ls:List[Int]):(Int, List[Int]) = {
-    require( ! ls.isEmpty )
-    def calcDist(ps:List[Int]):(Int, List[Int]) = {
-      val dist = ps.zip(ps.tail).map( distance _ ).sum
-      (dist, ps)
-    }
-    ls
-      .permutations     // all Tours
-      .map( calcDist )  // assign a cost to each tour
-      .minBy( _._1 )    // take the first with minimal cost.
-  }
-}
 
