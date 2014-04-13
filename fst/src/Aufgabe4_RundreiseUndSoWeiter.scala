@@ -19,10 +19,40 @@ object A {
       println(a.toString() + tpl._1.toString() + b.toString() + tpl._2.toString())
     }
 
+    // shortestRoute test
     test(A1.shortestRoute(List(1,2,3,4)), (133, List(2,4,1,3)) )
+
+    // Run Length encoding tests
+    test(A2.strRLE(""), List())
+    //test(A2.binRLE(Array()), List())
+    test(A2.strRLE("DEEEEffaSSSW"), List( ('D',1), ('E',4), ('f',2), ('a',1), ('S',3), ('W',1) ))
+    //test(A2.binRLE(Array(1,1,1,1,0,0,0,1,0)), List( (1,4), (0,3), (1,1), (0,1) ))
+
+    println( "Testcases " + (if (failed) "failed." else "succeeded.") )
   }
 
 
+}
+
+object A2 {
+
+  // in the Run Length Encoding methods the second element in the tuple
+  // represents the number of consecutive occurences of that singleton.
+
+  def strRLE(str:String):List[(Char, Int)] = group(str.toList).map( x => (x.head, x.size))
+
+  // how come this isnt in scala List immutable?
+  // groups equal elements together: "AAffeDD" => ["AA", "ff", "e", "DD"]
+  def group[A](xs:List[A]):List[List[A]]= xs match {
+    case Nil => List()
+    case _ => {
+      val fst = xs.head
+      val tpl = xs.span(_ == fst)
+      tpl._1 :: group(tpl._2)
+    }
+  }
+
+  def binRLE(bits:List[Int]):List[(Int, Int)] = Nil
 }
 
 object A1 {
