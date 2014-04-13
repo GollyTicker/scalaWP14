@@ -19,10 +19,13 @@ object A {
       println(a.toString() + tpl._1.toString() + b.toString() + tpl._2.toString())
     }
 
-    // test works, disabled due to 4sec calculation time.
-    // test(shortestRoute(List(1,2,3,4)), (133, List(2,4,1,3)) )
+    test(A1.shortestRoute(List(1,2,3,4)), (133, List(2,4,1,3)) )
   }
 
+
+}
+
+object A1 {
   def distance(tpl:(Int,Int)):Int = {
     val c1 = tpl._1
     val c2 = tpl._2
@@ -42,6 +45,5 @@ object A {
       .map( calcDist )  // assign a cost to each tour
       .minBy( _._1 )    // take the first with minimal cost.
   }
-
 }
 
