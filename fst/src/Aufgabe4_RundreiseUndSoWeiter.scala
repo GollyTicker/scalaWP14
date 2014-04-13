@@ -28,11 +28,37 @@ object A {
     test(A2.RLE("DEEEEffaSSSW".toList), List( ('D',1), ('E',4), ('f',2), ('a',1), ('S',3), ('W',1) ))
     test(A2.RLE(List(1,1,1,1,0,0,0,1,0)), List( (1,4), (0,3), (1,1), (0,1) ))
 
+
+    // Mixin traits: A4
+    val pers1= new Person1("Schmidt")
+    val pers2= new Person2("Schmidt")
+    val pers3= new Person("Müller") with Student with Lecturer with Worker
+    test(pers1 + ": "+pers1.work, "Person(Schmidt): I am lecturing")
+    test(pers2 + ": "+pers2.work, "Person(Schmidt): I am studying")
+    test(pers3 + ", " + pers3.act, "Person(Müller), I am studying and I am lecturing")
+
     println( "Testcases " + (if (failed) "failed." else "succeeded.") )
   }
+}
 
+object A4 {
 
 }
+case class Person(name: String)
+trait Student { def work= "I am studying" }
+trait Lecturer { def work= "I am lecturing" }
+trait Worker {
+  def work: String
+  def act = work
+}
+
+class Person1(name: String) extends Person(name) with Student with Lecturer {
+  override def work= super.work // wofür steht super?
+}
+class Person2(name: String) extends Person(name) with Lecturer with Student {
+  override def work= super.work // wofür steht super?
+}
+
 
 object A2 {
 
