@@ -30,9 +30,11 @@ object A {
 
 
     // Mixin traits: A4
-    val pers1= new Person1("Schmidt")
-    val pers2= new Person2("Schmidt")
-    val pers3= new Person("Müller") with Student with Lecturer with Worker
+    val pers1= new A4.Person1("Schmidt")
+    val pers2= new A4.Person2("Schmidt")
+    val pers3= new A4.Person("Müller") with A4.Student with A4.Lecturer with A4.Worker {
+      override def work = super[Student].work + " and " + super[Lecturer].work  // use super[TraitName] to refer to a specific trait.
+    }
     test(pers1 + ": "+pers1.work, "Person(Schmidt): I am lecturing")
     test(pers2 + ": "+pers2.work, "Person(Schmidt): I am studying")
     test(pers3 + ", " + pers3.act, "Person(Müller), I am studying and I am lecturing")
@@ -43,20 +45,30 @@ object A {
 
 object A4 {
 
-}
-case class Person(name: String)
-trait Student { def work= "I am studying" }
-trait Lecturer { def work= "I am lecturing" }
-trait Worker {
-  def work: String
-  def act = work
-}
+  case class Person(name: String)
 
-class Person1(name: String) extends Person(name) with Student with Lecturer {
-  override def work= super.work // wofür steht super?
-}
-class Person2(name: String) extends Person(name) with Lecturer with Student {
-  override def work= super.work // wofür steht super?
+  trait Student {
+    def work = "I am studying"
+  }
+
+  trait Lecturer {
+    def work = "I am lecturing"
+  }
+
+  trait Worker {
+    def work: String
+
+    def act = work // ???
+  }
+
+  class Person1(name: String) extends Person(name) with Student with Lecturer {
+    override def work = super.work // super steht hier für (Person + Student + Lecturer)   (?)
+  }
+
+  class Person2(name: String) extends Person(name) with Lecturer with Student {
+    override def work = super.work
+  }
+
 }
 
 
