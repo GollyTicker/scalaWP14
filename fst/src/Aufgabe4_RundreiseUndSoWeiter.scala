@@ -1,3 +1,4 @@
+import scala.annotation.tailrec
 import scala.compat.Platform
 
 /**
@@ -20,49 +21,49 @@ object A {
     }
 
     // shortestRoute test
-    test(A1.shortestRoute(List(1,2,3,4)), (133, List(2,4,1,3)) )
+    test(A1.shortestRoute(List(1, 2, 3, 4)), (133, List(2, 4, 1, 3)))
 
     // Run Length encoding tests
     test(A2.RLE("".toList), List())
     test(A2.RLE(List()), List())
-    test(A2.RLE("DEEEEffaSSSW".toList), List( ('D',1), ('E',4), ('f',2), ('a',1), ('S',3), ('W',1) ))
-    test(A2.RLE(List(1,1,1,1,0,0,0,1,0)), List( (1,4), (0,3), (1,1), (0,1) ))
+    test(A2.RLE("DEEEEffaSSSW".toList), List(('D', 1), ('E', 4), ('f', 2), ('a', 1), ('S', 3), ('W', 1)))
+    test(A2.RLE(List(1, 1, 1, 1, 0, 0, 0, 1, 0)), List((1, 4), (0, 3), (1, 1), (0, 1)))
 
 
     // Mixin traits: A4
-    val pers1= new A4.Person1("Schmidt")
-    val pers2= new A4.Person2("Schmidt")
-    val pers3= new A4.Person("Müller") with A4.Student with A4.Lecturer with A4.Worker {
-      override def work = super[Student].work + " and " + super[Lecturer].work  // use super[TraitName] to refer to a specific trait.
+    val pers1 = new A4.Person1("Schmidt")
+    val pers2 = new A4.Person2("Schmidt")
+    val pers3 = new A4.Person("Müller") with A4.Student with A4.Lecturer with A4.Worker {
+      override def work = super[Student].work + " and " + super[Lecturer].work // use super[TraitName] to refer to a specific trait.
     }
-    test(pers1 + ": "+pers1.work, "Person(Schmidt): I am lecturing")
-    test(pers2 + ": "+pers2.work, "Person(Schmidt): I am studying")
+    test(pers1 + ": " + pers1.work, "Person(Schmidt): I am lecturing")
+    test(pers2 + ": " + pers2.work, "Person(Schmidt): I am studying")
     test(pers3 + ", " + pers3.act, "Person(Müller), I am studying and I am lecturing")
 
-    println( "Testcases " + (if (failed) "failed." else "succeeded.") )
+    println("Testcases " + (if (failed) "failed." else "succeeded."))
   }
 }
 
 object A1 {
-  def distance(tpl:(Int,Int)):Int = {
+  def distance(tpl: (Int, Int)): Int = {
     val c1 = tpl._1
     val c2 = tpl._2
 
-    val diff = if (c1>c2) c1 - c2 else c2 - c1
+    val diff = if (c1 > c2) c1 - c2 else c2 - c1
     100 / diff
   }
 
-  def shortestRoute(ls:List[Int]):(Int, List[Int]) = {
-    require( ! ls.isEmpty )
-    def calcDist(ps:List[Int]):(Int, List[Int]) = {
+  def shortestRoute(ls: List[Int]): (Int, List[Int]) = {
+    require(!ls.isEmpty)
+    def calcDist(ps: List[Int]): (Int, List[Int]) = {
       // calculate the distance between consecutive elements and sum the distances
-      val dist = ps.zip(ps.tail).map( distance _ ).sum
+      val dist = ps.zip(ps.tail).map(distance _).sum
       (dist, ps)
     }
     ls
-      .permutations     // all Tours
-      .map( calcDist )  // assign a cost to each tour
-      .minBy( _._1 )    // take the minimal cost. (miyBy already take the first if there are multiple minima)
+      .permutations // all Tours
+      .map(calcDist) // assign a cost to each tour
+      .minBy(_._1) // take the minimal cost. (miyBy already take the first if there are multiple minima)
   }
 }
 
@@ -71,11 +72,11 @@ object A2 {
   // in the Run Length Encoding methods the second element in the tuple
   // represents the number of consecutive occurences of that singleton.
 
-  def RLE[A](xs:List[A]):List[(A, Int)] = group(xs).map( x => (x.head, x.size))
+  def RLE[A](xs: List[A]): List[(A, Int)] = group(xs).map(x => (x.head, x.size))
 
   // how come this isnt in scala.List.immutable?
   // groups equal elements together: "AAffeDD" => ["AA", "ff", "e", "DD"]
-  def group[A](xs:List[A]):List[List[A]]= xs match {
+  def group[A](xs: List[A]): List[List[A]] = xs match {
     case Nil => List()
     case _ => {
       val fst = xs.head
@@ -83,6 +84,30 @@ object A2 {
       tpl._1 :: group(tpl._2)
     }
   }
+
+}
+
+object A3 {
+  val run = {
+    println( "Outerthread: " +
+      async {
+          println("Innerthread: I am very sleepy")
+          // sleep(2000)
+          println("Innerthread: " + (Polynom(4, 3, 2, 1) * Polynom(1, 2, 3, 4))(-1))
+        }
+      )
+    println("Outerthread: " + Polynom(4, 3, 2, 1) * Polynom(1, 2, 3, 4))
+    println("Outerthread: stopped")
+  }
+  // Expected output:
+  /*
+    I am very sleepy
+    Thread[Thread-0,5,main]
+    Polynom(4x⁶ + 11x⁵ + 20x⁴ + 30x³ + 20x² + 11x + 4)
+    stopped
+    -4
+  */
+  def async(f:Unit) = f
 
 }
 
