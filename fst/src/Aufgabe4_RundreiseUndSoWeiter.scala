@@ -57,7 +57,9 @@ object A1 {
     require(!ls.isEmpty)
     def calcDist(ps: List[Int]): (Int, List[Int]) = {
       // calculate the distance between consecutive elements and sum the distances
-      val dist = ps.zip(ps.tail).map(distance _).sum
+      // val dist = ps.zip(ps.tail).map(distance _).sum // Swaneet
+      val dist = ps.sliding(2).map(ls => distance( (ls(0), ls(1))) ).sum  // Esser: Sliding.
+                        // sliding(n) erzeugt ein Fenster aller n-consecutive Elements und gibt eine Liste dessen zurück.
       (dist, ps)
     }
     ls
@@ -88,11 +90,11 @@ object A2 {
 }
 
 object A3 {
-  val run = {
+  def run = {
     println( "Outerthread: " +
       async {
           println("Innerthread: I am very sleepy")
-          // sleep(2000)
+          // Thread.sleep(2000)
           println("Innerthread: " + (Polynom(4, 3, 2, 1) * Polynom(1, 2, 3, 4))(-1))
         }
       )
@@ -107,7 +109,11 @@ object A3 {
     stopped
     -4
   */
-  def async(f:Unit) = f
+  def async[A](f: => A) = {
+    //val hello = new Thread(new Runnable{ def run() = body})
+    //hello.start()
+    //hello
+  }
 
 }
 
