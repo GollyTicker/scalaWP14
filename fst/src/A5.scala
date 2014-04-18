@@ -9,28 +9,30 @@ object Run {
 }
 
 object MC {
-  lazy val initial = State.make(0,0,MS,CS)
+  lazy val initial = State.make(0,0,MS,CS, false)
 
   val MS = 3
   val CS= 3
   val NPPL = CS + MS
 
+  def debug(str:String):Unit = println(str)
+
   def isGameOver(st:State) = st match {
-    case State(ml,cl,mr,cr) => ml < cl || mr < cr
+    case State(ml,cl,mr,cr, isLeft) => ml < cl || mr < cr
   }
 
   def isGameFinished(st:State) = st match {
-    case State(`MS`,`CS`,0,0) => true   // *almost PROLOG style matching here*
+    case State(`MS`,`CS`,0,0,_) => true   // *almost PROLOG style matching here*
     case _ => false
   }
 
   def chain(act:Action)(prev:GameProgress):GameProgress = {
     prev match {
-      case None => None
-      case Some((_, "W")) => None
-      case Some((_, "L")) => None
+      case None => {debug("chain1"); None}
+      case Some((_, "W")) => {debug("chain1"); None}
+      case Some((_, "L")) => {debug("chain1"); None}
       case Some((st, "C")) => st takes act
-      case Some((_, _)) => throw  new RuntimeException
+      case Some((_, _)) => throw new RuntimeException
     }
   }
 
@@ -43,6 +45,9 @@ object MC {
   def _action_over_state(act:Action)(st:State):GameProgress = {
     val lch:Int => Int = x => x + (if (act.rtoleft) (1) else (-1))
     val rch:Int => Int = x => x + (if (act.rtoleft) (-1) else (1))
+
+    if (act.rtoleft && !st.isLeft) ( () ) // all ok!
+              else return {debug("boat wrong"); None}  // bad. wrong direction
 
     // the ch stands for "change". mlch means the change in numbers of missionaries on the left side
     var mlch:Int => Int = x => x
@@ -60,12 +65,13 @@ object MC {
     }
 
     val newOptionState:Option[State] = st match {
-      case State(ml, cl, mr, cr) => {
+      case State(ml, cl, mr, cr, isLeft) => {
         val newML = mlch(ml)
         val newCL = clch(cl)
         val newMR = mrch(mr)
         val newCR = crch(cr)
-        State.safeMake(newML, newCL, newMR, newCR)
+        val newIsLeft = ! isLeft
+        State.safeMake(newML, newCL, newMR, newCR, newIsLeft)
       }
     }
     checkEnding(newOptionState)
@@ -84,23 +90,25 @@ object MC {
 }
 
 // missionary left, cannibal left, massionary right, cannibal right
-case class State private (val ml:Int, val cl:Int, val mr:Int, val cr:Int) {
-  override def toString = ml + " " + cl + " ~~~ " + mr + " " + cr
+case class State private (val ml:Int, val cl:Int, val mr:Int, val cr:Int, val isLeft:Boolean) {
+  override def toString = {
+    val riverAndBoat = if (isLeft) "<>~~~  " else "  ~~~<>"
+    ml + " " + cl + "  " + riverAndBoat + " " + mr + " " + cr
+  }
   def takes(act:Action):MC.GameProgress = MC._action_over_state(act)(this)
   lazy val lift:MC.GameProgress = MC.checkEnding(Some(this))
 }
 
 object State {
-
-  def make(ml:Int, cl:Int, mr:Int, cr:Int) = {
-    safeMake(ml,cl,mr,cr).get
+  def make(ml:Int, cl:Int, mr:Int, cr:Int, isLeft:Boolean) = {
+    safeMake(ml,cl,mr,cr, isLeft).get
   }
 
-  def safeMake(ml:Int, cl:Int, mr:Int, cr:Int):Option[State] = {
+  def safeMake(ml:Int, cl:Int, mr:Int, cr:Int, isLeft:Boolean):Option[State] = {
     val ls = List(ml,cl,mr,cr)
-    if (ls.sum != MC.NPPL) return None
-    if (ls.exists( _ < 0)) return None
-    Some(State(ml,cl,mr,cr))
+    if (ls.sum != MC.NPPL) return {MC.debug("safeMake1"); None}
+    if (ls.exists( _ < 0)) return {MC.debug("safeMake2");None}
+    Some(State(ml,cl,mr,cr,isLeft))
   }
 }
 
