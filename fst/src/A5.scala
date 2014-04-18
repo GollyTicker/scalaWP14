@@ -8,11 +8,11 @@ object Run {
     val fst = MC.chain("<-","CC")(MC.initial lift)
     println(fst)
 
-    val actions:List[Action] = List("<-","->","<-","->")
-                          .zip(List("MC", "M","CC", "C"))
+    val solution:List[Action] = List("<-","->","<-","->","<-","->","<-","->","<-","->","<-")
+                          .zip(List("MC", "M","CC", "C","MM","MC","MM", "C","CC", "C","CC"))
                           .map( tpl => Action.make(tpl._1, tpl._2) )
 
-    println(MC.play(MC.begin)(actions))
+    println(MC.play(MC.begin)(solution))
   }
 }
 
