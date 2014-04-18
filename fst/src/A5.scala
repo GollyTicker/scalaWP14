@@ -4,12 +4,21 @@
 
 object Run {
   def run() = {
-    println(MC.initial takes Action.make("<-", "MC"))  // should be 1 1 ~~~ 2 2
+    println(MC.initial takes Action.make("<-", "MC"))
+    val fst = MC.chain("<-","CC")(MC.initial lift)
+    println(fst)
+
+    val actions:List[Action] = List("<-","->","<-","->")
+                          .zip(List("MC", "M","CC", "C"))
+                          .map( tpl => Action.make(tpl._1, tpl._2) )
+
+    println(MC.play(MC.begin)(actions))
   }
 }
 
 object MC {
   lazy val initial = State.make(0,0,MS,CS, false)
+  lazy val begin = initial lift
 
   val MS = 3
   val CS= 3
@@ -18,7 +27,7 @@ object MC {
   def debug(str:String):Unit = println(str)
 
   def isGameOver(st:State) = st match {
-    case State(ml,cl,mr,cr, isLeft) => ml < cl || mr < cr
+    case State(ml,cl,mr,cr, isLeft) => 0 < ml && ml < cl || 0 < mr && mr < cr
   }
 
   def isGameFinished(st:State) = st match {
@@ -26,7 +35,9 @@ object MC {
     case _ => false
   }
 
-  def chain(act:Action)(prev:GameProgress):GameProgress = {
+  def play(game:GameProgress)(ls:List[Action]):GameProgress = ls.foldLeft(game)( (yet,act) => chainAct(act)(yet) )
+
+  def chainAct(act:Action)(prev:GameProgress):GameProgress = {
     prev match {
       case None => {debug("chain1"); None}
       case Some((_, "W")) => {debug("chain1"); None}
@@ -34,6 +45,10 @@ object MC {
       case Some((st, "C")) => st takes act
       case Some((_, _)) => throw new RuntimeException
     }
+  }
+
+  def chain(dirStr:String, psgStr:String)(prev:GameProgress):GameProgress = {
+    chainAct(Action.make(dirStr, psgStr))(prev)
   }
 
   type GameProgress = Option[(State,String)]
@@ -46,7 +61,7 @@ object MC {
     val lch:Int => Int = x => x + (if (act.rtoleft) (1) else (-1))
     val rch:Int => Int = x => x + (if (act.rtoleft) (-1) else (1))
 
-    if (act.rtoleft && !st.isLeft) ( () ) // all ok!
+    if (act.rtoleft == !st.isLeft) ( () ) // all ok!
               else return {debug("boat wrong"); None}  // bad. wrong direction
 
     // the ch stands for "change". mlch means the change in numbers of missionaries on the left side
@@ -70,7 +85,7 @@ object MC {
         val newCL = clch(cl)
         val newMR = mrch(mr)
         val newCR = crch(cr)
-        val newIsLeft = ! isLeft
+        val newIsLeft = !isLeft
         State.safeMake(newML, newCL, newMR, newCR, newIsLeft)
       }
     }
