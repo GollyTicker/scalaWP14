@@ -24,10 +24,21 @@ object MC {
     case _ => false
   }
 
-  type GameProgress = Option[(State,Boolean)]
-        // None => gameOver
-        // Some(_. true) => won
-        // Some(st, false) => to be continued
+  def chain(act:Action)(prev:GameProgress):GameProgress = {
+    prev match {
+      case None => None
+      case Some((_, "W")) => None
+      case Some((_, "L")) => None
+      case Some((st, "C")) => st takes act
+      case Some((_, _)) => throw  new RuntimeException
+    }
+  }
+
+  type GameProgress = Option[(State,String)]
+        // None => invalid Turn
+        // Some(st. "W") => won
+        // Some(st, "C") => to be continued
+        // Some(st, "L") => game over (lost)
 
   def _action_over_state(act:Action)(st:State):GameProgress = {
     val lch:Int => Int = x => x + (if (act.rtoleft) (1) else (-1))
@@ -48,7 +59,7 @@ object MC {
       case "CC" => {clch = lch compose lch; crch = rch compose rch}
     }
 
-    val newSt:Option[State] = st match {
+    val newOptionState:Option[State] = st match {
       case State(ml, cl, mr, cr) => {
         val newML = mlch(ml)
         val newCL = clch(cl)
@@ -57,8 +68,18 @@ object MC {
         State.safeMake(newML, newCL, newMR, newCR)
       }
     }
-    newSt
+    checkEnding(newOptionState)
   }
+
+  def checkEnding(newOptSt:Option[State]):GameProgress =
+    for {
+        newSt <- newOptSt
+        result = () match { // because if else if else look so ugly here
+          case _ if MC.isGameOver(newSt) => (newSt, "L")
+          case _ if MC.isGameFinished(newSt) => (newSt, "W")
+          case _ => (newSt, "C")
+        }
+    } yield result
 
 }
 
@@ -66,6 +87,7 @@ object MC {
 case class State private (val ml:Int, val cl:Int, val mr:Int, val cr:Int) {
   override def toString = ml + " " + cl + " ~~~ " + mr + " " + cr
   def takes(act:Action):MC.GameProgress = MC._action_over_state(act)(this)
+  lazy val lift:MC.GameProgress = MC.checkEnding(Some(this))
 }
 
 object State {
@@ -76,7 +98,7 @@ object State {
 
   def safeMake(ml:Int, cl:Int, mr:Int, cr:Int):Option[State] = {
     val ls = List(ml,cl,mr,cr)
-    assert(ls.sum != MC.NPPL)
+    if (ls.sum != MC.NPPL) return None
     if (ls.exists( _ < 0)) return None
     Some(State(ml,cl,mr,cr))
   }
