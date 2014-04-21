@@ -134,7 +134,9 @@ object MC {
 
     def isWon(game:GameProgress):Boolean = game.map( _._1 ).map( isGameFinished _  ).getOrElse(false)
 
-    def isContinuable(game:GameProgress):Boolean = game.map( _._2 == TO_BE_CONTINUED ).getOrElse(false)
+    def isNotLost(game:GameProgress):Boolean = game.map( _._2 != LOST ).getOrElse(false)
+
+    var visited:List[GameProgress] = Nil
 
     def solve_(yet:GameProgress)(takenMoves:List[Action]):Option[List[Action]] = {
 
@@ -147,20 +149,15 @@ object MC {
         act <- applicableActions
         newgame = play_(act)(yet)
         newmoves = act :: takenMoves
-        // visited = newgame :: visited
+        visited = newgame :: visited
         if newgame != None
-        if isContinuable(newgame)
-      // !visited.contains(newgame)
+        if isNotLost(newgame)
       } yield( (newgame, newmoves) )
 
-        //case Some(_)  => solve_(newgame)(newmoves)
-      // debug("No chances anymore: " + yet)
-
-      // isWon => some(takenMoves)
-
-      None
+      if (outcomes.isEmpty) None
+      else outcomes.foreach()
     }
-    solve_(yet)(Nil).map(_.reverse) // reverses the list inside Option.
+    solve_(yet)(Nil)(Nil).map(_.reverse) // reverses the list inside Option.
     // It has to be reversed, because the actions were added to the front.
   }
 }
