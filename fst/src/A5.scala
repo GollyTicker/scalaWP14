@@ -15,13 +15,16 @@ object Run {
     println("Ending: " + MC.startGame(solution))
 
     println("Solving form " + sample)
-    println("results in: " + MC.solve(sample))
+    //println("results in: " + MC.solve(sample))
+    println("Should work: " + MC.solve(MC.justBeforeEnd))
   }
 }
 
 object MC {
   lazy val initial = State.make(0,0,MS,CS, false)
   lazy val beginning = initial lift
+
+  lazy val justBeforeEnd = State.make(MS-1,CS-1,1,1,false) lift
 
   val WON = "Won!"
   val LOST = "Lost..."
@@ -37,7 +40,7 @@ object MC {
     // Some(st, "C") => to be continued
     // Some(st, "L") => game over (lost)
 
-  def debug(str:String):Unit = println(str)
+  def debug(str:String):Unit = ()//println(str)
 
   def isGameOver(st:State) = st match {
     case State(ml,cl,mr,cr, isLeft) => 0 < ml && ml < cl || 0 < mr && mr < cr
@@ -119,22 +122,32 @@ object MC {
   // Brute Force solving
   def solve(yet:GameProgress):Option[List[Action]] = {
 
-    val applicableActions:List[Action] = Nil
+    val applicableActions:List[Action] = {
+      val dirs = List("<-","->")
+      val psgs = List("M", "C", "MC", "MM", "CC")
+      for {
+        dir <- dirs
+        psg <- psgs
+      } yield ( Action(dir,psg) )
+    }
 
 
     def solve_(yet:GameProgress)(takenMoves:List[Action]):Option[List[Action]] = {
       val gameFinished:Boolean = yet.map( _._1 ).map( isGameFinished _  ).getOrElse(false)
-      debug("Tried:" + takenMoves.mkString(","));
+      println("Tried:" + takenMoves.mkString(",")) // debug
+      if (takenMoves.length > 4) return None  // debug
       if (gameFinished) return Some(takenMoves)
 
       for (act <- applicableActions) {
         val newgame:GameProgress  = play_(act)(yet)
         val newmoves:List[Action] = act :: takenMoves
+        newgame != None
         newgame match { // instead of using a return here, the result is simply put into the list. its then read out and returned.
           case Some(_)  => return solve_(newgame)(newmoves)
+          case _ => ()
         }
       }
-      debug("No chances anymore: " + yet)
+      // debug("No chances anymore: " + yet)
       None
     }
     solve_(yet)(Nil).map(_.reverse) // reverses the list inside Option.
