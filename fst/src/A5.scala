@@ -16,6 +16,7 @@ object Run {
 
     println("Solving form " + sample)
     //println("results in: " + MC.solve(sample))
+    println("Should work: " + MC.play("<-","MC")(MC.justBeforeEnd))
     println("Should work: " + MC.solve(MC.justBeforeEnd))
   }
 }
@@ -131,21 +132,24 @@ object MC {
       } yield ( Action(dir,psg) )
     }
 
+    var visited:List[GameProgress] = Nil
 
     def solve_(yet:GameProgress)(takenMoves:List[Action]):Option[List[Action]] = {
       val gameFinished:Boolean = yet.map( _._1 ).map( isGameFinished _  ).getOrElse(false)
-      println("Tried:" + takenMoves.mkString(",")) // debug
+      println("Tried:" + takenMoves) // debug
       if (takenMoves.length > 4) return None  // debug
       if (gameFinished) return Some(takenMoves)
 
       for (act <- applicableActions) {
-        val newgame:GameProgress  = play_(act)(yet)
-        val newmoves:List[Action] = act :: takenMoves
+        val newgame    = play_(act)(yet)
+        val newmoves   = act :: takenMoves
+        visited = newgame :: visited
         newgame != None
-        newgame match { // instead of using a return here, the result is simply put into the list. its then read out and returned.
-          case Some(_)  => return solve_(newgame)(newmoves)
-          case _ => ()
-        }
+        !visited.contains(newgame) // if the state was already visitied. to prevent cyclic turns
+        elem = newgame match { // instead of using a return here, the result is simply put into the list. its then read out and returned.
+          case Some(_)  => solve_(newgame)(newmoves)
+          case _ => None
+        } yield (elem)
       }
       // debug("No chances anymore: " + yet)
       None
