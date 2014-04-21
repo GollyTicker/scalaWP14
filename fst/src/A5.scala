@@ -132,21 +132,32 @@ object MC {
       } yield ( Action(dir,psg) )
     }
 
+    def isWon(game:GameProgress):Boolean = game.map( _._1 ).map( isGameFinished _  ).getOrElse(false)
+
+    def isContinuable(game:GameProgress):Boolean = game.map( _._2 == TO_BE_CONTINUED ).getOrElse(false)
+
     def solve_(yet:GameProgress)(takenMoves:List[Action]):Option[List[Action]] = {
 
       println("Tried:" + takenMoves) // debug
       if (takenMoves.length > 4) return None  // debug
-      //val gameFinished:Boolean = yet.map( _._1 ).map( isGameFinished _  ).getOrElse(false)
-      // if (gameFinished) return Some(takenMoves)
 
-      // for (act <- applicableActions)
-        // val newgame    = play_(act)(yet)
-        // val newmoves   = act :: takenMoves
+      if ( isWon(yet) ) return Some(takenMoves)
+
+      val outcomes:List[(GameProgress, List[Action])] = for {
+        act <- applicableActions
+        newgame = play_(act)(yet)
+        newmoves = act :: takenMoves
         // visited = newgame :: visited
-        // newgame != None
-        // !visited.contains(newgame)
+        if newgame != None
+        if isContinuable(newgame)
+      // !visited.contains(newgame)
+      } yield( (newgame, newmoves) )
+
         //case Some(_)  => solve_(newgame)(newmoves)
       // debug("No chances anymore: " + yet)
+
+      // isWon => some(takenMoves)
+
       None
     }
     solve_(yet)(Nil).map(_.reverse) // reverses the list inside Option.
