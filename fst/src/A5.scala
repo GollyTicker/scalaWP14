@@ -4,20 +4,28 @@
 
 object Run {
   def run() = {
-
     val solution:List[Action] = List("<-","->","<-","->","<-","->","<-","->","<-","->","<-")
                           .zip(List("MC", "M","CC", "C","MM","MC","MM", "C","CC", "C","CC"))
                           .map( tpl => Action(tpl._1, tpl._2) )
 
+    val sample = MC.play("<-", "MC")(MC.beginning)
+
     println("Beginning: " + MC.startGame(List()))
-    println("Sample Move: " + MC.play("<-", "MC")(MC.beginning))
+    println("Sample Move: " + sample)
     println("Ending: " + MC.startGame(solution))
+
+    println("Solving form " + sample)
+    println("results in: " + MC.solve(sample))
   }
 }
 
 object MC {
   lazy val initial = State.make(0,0,MS,CS, false)
   lazy val beginning = initial lift
+
+  val WON = "Won!"
+  val LOST = "Lost..."
+  val TO_BE_CONTINUED = "To Be Continued"
 
   val MS = 3
   val CS= 3
@@ -46,9 +54,9 @@ object MC {
   def play_(act:Action)(prev:GameProgress):GameProgress = {
     prev match {
       case None => {debug("play_1: cannot process because invalid Progress"); None}
-      case Some((_, "W")) => {debug("play_2: Game is already won."); None}
-      case Some((_, "L")) => {debug("play_3: Game is already over."); None}
-      case Some((st, "C")) => st takes act  // here the action is executed
+      case Some((_, "WON")) => {debug("play_2: Game is already won."); None}
+      case Some((_, "LOST")) => {debug("play_3: Game is already over."); None}
+      case Some((st, "To Be Continued")) => st takes act  // here the action is executed
       case Some((_, _)) => throw new RuntimeException
     }
   }
@@ -100,15 +108,38 @@ object MC {
     for {
         newSt <- newOptSt
         result = () match { // using match expression because "if else if else" looks ugly.
-          case _ if MC.isGameOver(newSt) => (newSt, "L")
-          case _ if MC.isGameFinished(newSt) => (newSt, "W")
-          case _ => (newSt, "C")
+          case _ if MC.isGameOver(newSt) => (newSt, MC.LOST)
+          case _ if MC.isGameFinished(newSt) => (newSt, MC.WON)
+          case _ => (newSt, MC.TO_BE_CONTINUED)
         }
     } yield result
 
   // for a given game progress, "solve" returns a list of actions for which this game
   // can be finished properly. If this isnt possible, then it returns None.
-  def solve(yet:GameProgress):Option[List[Action]] = None
+  // Brute Force solving
+  def solve(yet:GameProgress):Option[List[Action]] = {
+
+    val applicableActions:List[Action] = Nil
+
+
+    def solve_(yet:GameProgress)(takenMoves:List[Action]):Option[List[Action]] = {
+      val gameFinished:Boolean = yet.map( _._1 ).map( isGameFinished _  ).getOrElse(false)
+      debug("Tried:" + takenMoves.mkString(","));
+      if (gameFinished) return Some(takenMoves)
+
+      for (act <- applicableActions) {
+        val newgame:GameProgress  = play_(act)(yet)
+        val newmoves:List[Action] = act :: takenMoves
+        newgame match { // instead of using a return here, the result is simply put into the list. its then read out and returned.
+          case Some(_)  => return solve_(newgame)(newmoves)
+        }
+      }
+      debug("No chances anymore: " + yet)
+      None
+    }
+    solve_(yet)(Nil).map(_.reverse) // reverses the list inside Option.
+    // It has to be reversed, because the actions were added to the front.
+  }
 }
 // missionary left, cannibal left, massionary right, cannibal right
 case class State private (val ml:Int, val cl:Int, val mr:Int, val cr:Int, val isLeft:Boolean) {
