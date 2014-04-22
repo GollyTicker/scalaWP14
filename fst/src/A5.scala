@@ -14,10 +14,10 @@ object Run {
     println("Sample Move: " + sample)
     println("Ending: " + MC.startGame(solution))
 
-    println("Solving form " + sample)
+    /*println("Solving form " + sample)
     //println("results in: " + MC.solve(sample))
     println("Should work: " + MC.play("<-","MC")(MC.justBeforeEnd))
-    println("Should work: " + MC.solve(MC.justBeforeEnd))
+    println("Should work: " + MC.solve(MC.justBeforeEnd))*/
   }
 }
 
@@ -121,7 +121,7 @@ object MC {
   // for a given game progress, "solve" returns a list of actions for which this game
   // can be finished properly. If this isnt possible, then it returns None.
   // Brute Force solving
-  def solve(yet:GameProgress):Option[List[Action]] = {
+  /*def solve(yet:GameProgress):Option[List[Action]] = {
 
     val applicableActions:List[Action] = {
       val dirs = List("<-","->")
@@ -159,7 +159,7 @@ object MC {
     }
     solve_(yet)(Nil)(Nil).map(_.reverse) // reverses the list inside Option.
     // It has to be reversed, because the actions were added to the front.
-  }
+  }*/
 }
 // missionary left, cannibal left, massionary right, cannibal right
 case class State private (val ml:Int, val cl:Int, val mr:Int, val cr:Int, val isLeft:Boolean) {
