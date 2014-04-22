@@ -13,6 +13,27 @@ object vorls6 {
 
   // objects sind Module mit Klassen, Feldern und weiteren Objekten und können
   // als Argumente weitergereicht werden.
+
+  // Identifier und Operatoren
+  // Prefix sind 4 viererlaubt: + - ! ~
+  // z.B. +4 oder ~2
+  // definition mit z.B. "def unary_+" für +
+  // Preäzedenz bei Infixoperatoren nur vom ersten OPerator abhängig.
+  // lowest | ^ &   < >   = !   : + -    * / % (andere Operatorensymbole) highest
+  // Ausnahemen sind die Zuweisungsoperatoren:
+  // = += -= *= /*
+
+  // Assoziativ:
+  // Infixoperator ist recht-assoziativ, falls das letzte Zeichen ein : ist.
+  // 1 :: Nil
+  // wird zu
+  // Nil.::(1)
+
+  val caseFunction:AnyVal => String = {
+    case 10.0 => "10.0"
+    case x:Byte => "Byte"
+    case _ => "anything else"
+  }
 }
 
 // lazy Object.
@@ -69,6 +90,7 @@ case object Obj extends DC(2) // case Object ist ein "lazy objekt"
 // Closure
 
 // Anonyme case-Funktionen
+// Partial Function bei Aktoren als Dispather z.B. sehr wichtig/nützlich
 
 object Streams {
   import scala.Stream._
@@ -130,20 +152,7 @@ object Streams {
   // dies funktioniert!
   lazy val goodRandomInt3:Stream[Int] = nextInt(10) #:: goodRandomInt3.map( _ => nextInt(10) )
 
-  // Identifier und Operatoren
-  // Prefix sind 4 viererlaubt: + - ! ~
-  // z.B. +4 oder ~2
-  // definition mit z.B. "def unary_+" für +
-  // Preäzedenz bei Infixoperatoren nur vom ersten OPerator abhängig.
-  // lowest | ^ &   < >   = !   : + -    * / % (andere Operatorensymbole) highest
-  // Ausnahemen sind die Zuweisungsoperatoren:
-  // = += -= *= /*
 
-  // Assoziativ:
-  // Infixoperator ist recht-assoziativ, falls das letzte Zeichen ein : ist.
-  // 1 :: Nil
-  // wird zu
-  // Nil.::(1)
 
 }
 
