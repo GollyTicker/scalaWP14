@@ -64,6 +64,12 @@ case object Obj extends DC(2) // case Object ist ein "lazy objekt"
 // 1:: Nil
 // 1#:: Stream.empty
 
+// case object NaC extends Complex(Double.NaN, Double.NaN)    // IEEE Idiom. Lieber Fehlerzahl statt Exception.
+
+// Closure
+
+// Anonyme case-Funktionen
+
 object Streams {
   import scala.Stream._
   val str:Stream[Int] = 1 #:: 3 #:: 2 #:: Stream.empty
@@ -111,11 +117,35 @@ object Streams {
   // res5: BigInt = 43466557686937456435688527675040625802564660517371780402481729089536555417949051890403879840079255169295922593080322634775209689623239873322471161642996440906533187938298969649928516003704476137795166849228875
 
   lazy val randomInt:Stream[Int] = nextInt(10) #:: randomInt
+  // es wird memoisiert....
+  // scala> Streams.randomInt.take(15).force
+  // res0: scala.collection.immutable.Stream[Int] = Stream(4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4)
 
+  // dies funktioniert!
+  lazy val goodRandomInt:Stream[Int] = {
+    def nextI(i:Int):Stream[Int] = nextInt(10) #:: nextI(i + 1)
+    nextI(0)
+  }
 
+  // dies funktioniert!
+  lazy val goodRandomInt3:Stream[Int] = nextInt(10) #:: goodRandomInt3.map( _ => nextInt(10) )
+
+  // Identifier und Operatoren
+  // Prefix sind 4 viererlaubt: + - ! ~
+  // z.B. +4 oder ~2
+  // definition mit z.B. "def unary_+" für +
+  // Preäzedenz bei Infixoperatoren nur vom ersten OPerator abhängig.
+  // lowest | ^ &   < >   = !   : + -    * / % (andere Operatorensymbole) highest
+  // Ausnahemen sind die Zuweisungsoperatoren:
+  // = += -= *= /*
+
+  // Assoziativ:
+  // Infixoperator ist recht-assoziativ, falls das letzte Zeichen ein : ist.
+  // 1 :: Nil
+  // wird zu
+  // Nil.::(1)
 
 }
-
 
 class C {
   val i = { println("i");  f}
