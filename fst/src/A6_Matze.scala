@@ -31,7 +31,7 @@ class Matrix private(matrix: Array[Double], val n: Int) {
   def *(other: Matrix) = {
     require(sameSizeOf(other))
     new Matrix(
-      forEach( i => j => (0 to n).map(k => {/*print((i,j,k) + ":");*/ this(i,k) * other(k,j) }).sum, n).toArray
+      forEach( i => j => (0 until n).map(k => {/*print((i,j,k) + ":");*/ this(i,k) * other(k,j) }).sum, n).toArray
       , n)
   }
 
@@ -98,8 +98,6 @@ object Matrix {
     println("Eq self: " + (mat1 == mat1) )
     println("Eq noit self: " + (mat1 != mat2) )
     println("Eq not null " + (mat1 != null) )
-
-    println(forEach(i=> j => (mat2(i,j) == (if (i == j) then 1.0 else 0.0)) ))
 
     println("Mult: " + mat4*(mat4*0.3) )
 
