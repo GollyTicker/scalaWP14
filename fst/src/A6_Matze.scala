@@ -41,7 +41,7 @@ class Matrix private(matrix: Array[Double], val n: Int) {
   override def equals(any: Any) = {
     lazy val other = any.asInstanceOf[Matrix]
     any.isInstanceOf[Matrix] && sameSizeOf(other) &&
-      forEach(i => j => other(i, j) == this(i, j), n).reduceLeft(_ && _)
+      forEach(i => j => other(i, j) == this(i, j), n).foldLeft(true)(_&&_)
   }
 
   override def toString = ("-" * 40) + "\n" + matrix.sliding(n, n).map(_.mkString(", ")).mkString("\n")
@@ -93,18 +93,22 @@ object Matrix {
     val mat4 = Matrix(5, 1.0)
     val mat5 = Matrix(2, (0.0, 0.0, 10.0), (0.0, 1.0, 10.0), (1.0, 0.0, 10.0), (1.0, 1.0, 10.0))
     val mat6 = Matrix(3, (i,j) => 3*i - j + 1)
+    println(mat1)
     println(mat2)
     println(mat3)
+    println(mat4)
     println(mat2 + mat3)
-    println("Eq self: " + (mat1 == mat1))
-    println("Eq noit self: " + (mat1 != mat2))
-    println("Eq not null " + (mat1 != null))
+    println("Eq self: " + (mat1 == mat1) )
+    println("Eq not self: " + (mat1 != mat6) )
+    println("Eq not self: " + (mat1 != mat2) )
+    println("Eq to equal: " + (mat2 == Unit(mat2.size)) )
+    println("Eq not null " + (mat1 != null) )
 
-    println("Mult: " + mat3 * (mat3 * 0.3))
+    println("Mult: " + mat3 * mat6)
 
-    println("Mult id" + (mat5 * Unit(mat5.n) == mat5))
-    println("Mult anhi" + (mat5 * Zero(mat5.n) == Zero(mat5.n)))
-    println("Mult Asso:" + ((mat1 * mat3) * mat6 == mat1 * (mat3 * mat6)))
+    println("Mult id" + (mat5 * Unit(mat5.n) == mat5) )    // QuickCheck would be nice here
+    println("Mult anhi" + (mat5 * Zero(mat5.n) == Zero(mat5.n)) )
+    println("Mult Asso:" + ( (mat1 * mat3) * mat6 == mat1 * (mat3 * mat6) ))
   }
 
 }
