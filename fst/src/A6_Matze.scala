@@ -12,8 +12,7 @@ class Matrix private(matrix: Array[Double], val n: Int) {
 
   import ForEach.forEach
 
-  def apply(i: Int, j: Int) = { //print((i,j));
-    matrix(i * n + j)}
+  def apply(i: Int, j: Int) = matrix(i * n + j)
 
   lazy val size = n * n
 
@@ -27,15 +26,15 @@ class Matrix private(matrix: Array[Double], val n: Int) {
   def *(x: Double) = new Matrix(forEach(i => j => x * this(i, j), n).toArray, n)
 
   // https://en.wikipedia.org/wiki/Matrix_multiplication#Matrix_product_.28two_matrices.29
-  // (A*B)(i)(j) == sum {k, 1, m, A(i)(k) * B(k)(j)
+  // (A*B)(i)(j) == sum {k, 1, n, A(i)(k) * B(k)(j)
   def *(other: Matrix) = {
     require(sameSizeOf(other))
     new Matrix(
-      forEach( i => j => (0 until n).map(k => {/*print((i,j,k) + ":");*/ this(i,k) * other(k,j) }).sum, n).toArray
+      forEach(i => j => (0 until n).map(k => this(i, k) * other(k, j)).sum, n).toArray
       , n)
   }
 
-  def -(m1: Matrix) = this + (- m1)
+  def -(m1: Matrix) = this + (-m1)
 
   def unary_- = new Matrix(forEach(i => j => -this(i, j), n).toArray, n)
 
@@ -76,15 +75,16 @@ object Matrix {
 
   def apply(n: Int, t: Triple[Double, Double, Double]*) =
     new Matrix(
-      (for (i <- (0 until n);
-            j <- (0 until n);
-            (i1, j1, k) <- t;
-            if i == i1 && j1 == j)
-      yield k).toArray, n
+      (for {i <- (0 until n)
+            j <- (0 until n)
+            (i1, j1, k) <- t
+            if i == i1 && j1 == j
+      } yield k).toArray, n
     )
 
-  def Zero(n:Int) = Matrix(n, 0.0)
-  def Unit(n:Int) = Matrix(n, (i, j) => if (i == j) 1.0 else 0.0)
+  def Zero(n: Int) = Matrix(n, 0.0)
+
+  def Unit(n: Int) = Matrix(n, (i, j) => if (i == j) 1.0 else 0.0)
 
   def main(args: Array[String]) {
     val mat1 = Matrix(1.0, 2.0, 3.0, 4, 5, 6, 7, 8, 9)
@@ -92,19 +92,19 @@ object Matrix {
     val mat3 = Matrix(Array(Array(3.0, 2.0, 1.0), Array(0.0, 1, 0), Array(0.0, 0, 3)))
     val mat4 = Matrix(5, 1.0)
     val mat5 = Matrix(2, (0.0, 0.0, 10.0), (0.0, 1.0, 10.0), (1.0, 0.0, 10.0), (1.0, 1.0, 10.0))
+    val mat6 = Matrix(3, (i,j) => 3*i - j + 1)
     println(mat2)
     println(mat3)
     println(mat2 + mat3)
-    println("Eq self: " + (mat1 == mat1) )
-    println("Eq noit self: " + (mat1 != mat2) )
-    println("Eq not null " + (mat1 != null) )
+    println("Eq self: " + (mat1 == mat1))
+    println("Eq noit self: " + (mat1 != mat2))
+    println("Eq not null " + (mat1 != null))
 
-    println("Mult: " + mat4*(mat4*0.3) )
+    println("Mult: " + mat3 * (mat3 * 0.3))
 
-
-    println("Mult id" + (mat5*Unit(mat5.n) == mat5) )
-    //println("Mult anhi" + (mat5*Zero(mat5.n) == Zero(mat5.n)) )
-    //println("Mult Asso:" + ((mat5*mat3)*mat4 == mat5*(mat3*mat4)) )
+    println("Mult id" + (mat5 * Unit(mat5.n) == mat5))
+    println("Mult anhi" + (mat5 * Zero(mat5.n) == Zero(mat5.n)))
+    println("Mult Asso:" + ((mat1 * mat3) * mat6 == mat1 * (mat3 * mat6)))
   }
 
 }
