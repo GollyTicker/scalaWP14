@@ -12,7 +12,8 @@ class Matrix private(matrix: Array[Double], val n: Int) {
 
   import ForEach.forEach
 
-  def apply(i: Int, j: Int) = matrix(i * n + j)
+  def apply(i: Int, j: Int) = { //print((i,j));
+    matrix(i * n + j)}
 
   lazy val size = n * n
 
@@ -30,7 +31,7 @@ class Matrix private(matrix: Array[Double], val n: Int) {
   def *(other: Matrix) = {
     require(sameSizeOf(other))
     new Matrix(
-      forEach( i => j => (0 to n).map(k => this(i,k) * other(k,j) ).sum, n).toArray
+      forEach( i => j => (0 to n).map(k => {/*print((i,j,k) + ":");*/ this(i,k) * other(k,j) }).sum, n).toArray
       , n)
   }
 
@@ -44,9 +45,7 @@ class Matrix private(matrix: Array[Double], val n: Int) {
       forEach(i => j => other(i, j) == this(i, j), n).reduceLeft(_ && _)
   }
 
-  override def toString = {
-    ("-" * 40) + "\n" + matrix.sliding(n, n).map(_.mkString(", ")).mkString("\n")
-  }
+  override def toString = ("-" * 40) + "\n" + matrix.sliding(n, n).map(_.mkString(", ")).mkString("\n")
 
 }
 
@@ -99,7 +98,11 @@ object Matrix {
     println("Eq self: " + (mat1 == mat1) )
     println("Eq noit self: " + (mat1 != mat2) )
     println("Eq not null " + (mat1 != null) )
+
+    println(forEach(i=> j => (mat2(i,j) == (if (i == j) then 1.0 else 0.0)) ))
+
     println("Mult: " + mat4*(mat4*0.3) )
+
 
     println("Mult id" + (mat5*Unit(mat5.n) == mat5) )
     //println("Mult anhi" + (mat5*Zero(mat5.n) == Zero(mat5.n)) )
