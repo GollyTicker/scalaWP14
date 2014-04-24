@@ -45,8 +45,7 @@ class Matrix private(matrix: Array[Double], val n: Int) {
   }
 
   override def toString = {
-    val x = matrix.size / n
-    ("-" * 40) + "\n" + matrix.sliding(x, x).map(_.mkString(", ")).mkString("\n")
+    ("-" * 40) + "\n" + matrix.sliding(n, n).map(_.mkString(", ")).mkString("\n")
   }
 
 }
