@@ -61,7 +61,7 @@ object Matrix {
 
   def apply(xs: Array[Array[Double]]) =
     if (xs.forall(x => x.size == xs.size))
-      new Matrix(xs.foldLeft(Array[Double]())((acc, elem) => acc ++ elem), xs.size)
+      new Matrix(xs.flatten, xs.size)
     else
       throw new RuntimeException("DIE!")
 
