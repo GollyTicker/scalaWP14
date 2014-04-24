@@ -10,11 +10,11 @@ object ForEach {
 
 class Matrix private(matrix: Array[Double], val n: Int) {
 
-  import ForEach.forEach;
+  import ForEach.forEach
 
   def apply(i: Int, j: Int) = matrix(i * n + j)
 
-  val size = n * n
+  lazy val size = n * n
 
   def sameSizeOf(m: Matrix) = m.size == size
 
@@ -25,7 +25,14 @@ class Matrix private(matrix: Array[Double], val n: Int) {
 
   def *(x: Double) = new Matrix(forEach(i => j => x * this(i, j), n).toArray, n)
 
-  def *(x: Matrix) = this //new Matrix(forEach(i => j => x * this(i, j), n).toArray, n)
+  // https://en.wikipedia.org/wiki/Matrix_multiplication#Matrix_product_.28two_matrices.29
+  // (A*B)(i)(j) == sum {k, 1, m, A(i)(k) * B(k)(j)
+  def *(other: Matrix) = {
+    require(sameSizeOf(other))
+    new Matrix(
+      forEach( i => j => (1 to n).map(k => this(i,k) * other(k,j) ).sum, n).toArray
+      , n)
+  }
 
   def -(m1: Matrix) = this + (- m1)
 
@@ -46,7 +53,7 @@ class Matrix private(matrix: Array[Double], val n: Int) {
 
 object Matrix {
 
-  import ForEach.forEach;
+  import ForEach.forEach
 
   def apply(x: Double*) = {
     if (math.sqrt(x.size).isWhole)
@@ -94,9 +101,9 @@ object Matrix {
     println(mat1 != mat2)
     println(mat1 != null)
 
-    println("Mult id" + mat5*Unit(mat5.size) == mat5 )
-    println("Mult anhi" + mat5*Zero(mat5.size) == Zero(mat5.size) )
-    println("Mult Asso:" + (mat5*mat3)*mat4 == mat5*(mat3*mat4) )
+    println("Mult id" + (mat5*Unit(mat5.size) == mat5) )
+    println("Mult anhi" + (mat5*Zero(mat5.size) == Zero(mat5.size)) )
+    println("Mult Asso:" + ((mat5*mat3)*mat4 == mat5*(mat3*mat4)) )
   }
 
 }
