@@ -101,7 +101,7 @@ object Matrix {
     println("Eq self: " + (mat1 == mat1) )
     println("Eq not self: " + (mat1 != mat6) )
     println("Eq not self: " + (mat1 != mat2) )
-    println("Eq to equal: " + (mat2 == Unit(mat2.size)) )
+    println("Eq to equal: " + (mat2 == Unit(mat2.n)) )
     println("Eq not null " + (mat1 != null) )
 
     println("Mult: " + mat3 * mat6)
