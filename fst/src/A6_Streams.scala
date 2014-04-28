@@ -2,7 +2,6 @@
  * Created by Swaneet on 28.04.2014.
  */
 object A6 {
-  import Stream._
 
   lazy val withFrom:Stream[Int] = from(1).map(triExp)
 
@@ -19,16 +18,18 @@ object A6 {
 
   def testStreams[A](st1:Stream[A], st2:Stream[A]):Boolean = st1.take(14) == st2.take(14)
 
-  lazy val withConsFirst:Stream[Int] = {
+  lazy val withNext:Stream[Int] = {
     def next(n:Int):Stream[Int] =  Stream.cons(triExp(n), next(n + 1))
     next(1)
   }
 
   lazy val withIterate:Stream[Int] = Stream.iterate(1)(triInd)
 
-  lazy val withConsSecond:Stream[Int] = cons(1, withConsSecond.map(triInd) )
+  lazy val withCons:Stream[Int] = cons(1, withCons.map(triInd) )
 
-  lazy val triangleResult = Stream(1, 3, 6, 10, 15, 21, 28, 36, 45, 55, 66, 78, 91, 105)
+  lazy val withOperator:Stream[Int] = 1 #:: 3 #:: withCons.zip(withCons.tail).map { case (n1, n2) => n2 + (n2 - n1) + 1 }
+
+  val triangleResult = Stream(1, 3, 6, 10, 15, 21, 28, 36, 45, 55, 66, 78, 91, 105).force
 
   // hdStreams [] = []
   // hdStreams (x:xs) = map (x:) ([]:hdStreams(xs))
@@ -43,13 +44,14 @@ object A6 {
     // println(exampleHeadStreams.map(_.force).force)
     println(exampleHeadStreams == Stream(Stream(10), Stream(10, 11), Stream(10, 11, 12), Stream(10, 11, 12, 13), Stream(10, 11, 12, 13, 14)))
 
-    println(testStreams(withFrom, withConsFirst))
-    println(testStreams(withFrom, withIterate))
+    println(testStreams(triangleResult, withFrom))
+    println(testStreams(triangleResult, withNext))
+    println(testStreams(triangleResult, withIterate))
 
-    //println(withConsSecond.take(14).force)
+    //println(withCons.take(14).force)
 
-    println(testStreams(withFrom, withConsSecond))
-
+    println(testStreams(triangleResult, withCons))
+    println(testStreams(triangleResult, withOperator))
   }
 
 }
