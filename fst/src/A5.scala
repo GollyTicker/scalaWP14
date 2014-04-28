@@ -2,6 +2,9 @@
  * Created by Swaneet on 18.04.2014.
  */
 
+// look at the solution with matze:
+// https://github.com/sacry-/haw/tree/master/Scala/A5/src
+
 object Run {
   def run() = {
     val solution:List[Action] = List("<-","->","<-","->","<-","->","<-","->","<-","->","<-")
