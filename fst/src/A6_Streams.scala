@@ -1,8 +1,9 @@
 /**
  * Created by Swaneet on 28.04.2014.
  */
-object A6 {
+import Stream._
 
+object A6 {
   lazy val withFrom:Stream[Int] = from(1).map(triExp)
 
   def triExp(n:Int) = n*(n+1)/2
