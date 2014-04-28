@@ -11,8 +11,9 @@ object A6 {
   def triInd(n:Int):Int = {
     import math.sqrt
     lazy val oldN:Int = findNfor(n * 2)
+    lazy val lowerBound:Int = sqrt(n).floor.asInstanceOf[Int]
     def findNfor(d:Int) = {
-      from(0).takeWhile( _ <= sqrt(d)).flatMap( n => if (n*(n+1) == d) n::Nil else Nil ).head
+      from(lowerBound).takeWhile( _ <= sqrt(d)).flatMap( n => if (n*(n+1) == d) n::Nil else Nil ).head
     }
     (oldN + 1)*(oldN + 2)/2
   }
