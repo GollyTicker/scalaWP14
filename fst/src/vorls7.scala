@@ -35,6 +35,17 @@ object vorls7 {
   def plus(x:Int, y:Int):Int = if (x==0) y else plus(x-1, y+1)
 
   // Access-Modifiers
+  // Packages können hierarchih in der gleichen Source-Datei geschachtelts werden.
 
+
+
+  // IMPLICITS
+  // Code zu Instanzen von T hinzufügen ohne die Klassen T zu veränderen.
+  // "bcd".foreach( c => println(c-1).toChar )
+  // Aber Java String kennt kein foreach!
+
+  // implicits bei der letzten Parameterliste.
+  // Die letzten Parameter werden ja nach Scope automatisch genommen,
+  // falls diese weggelassen wurden.
 
 }
