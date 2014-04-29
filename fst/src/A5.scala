@@ -3,7 +3,7 @@
  */
 
 // look at the solution with matze:
-// https://github.com/sacry-/haw/tree/master/Scala/A5/src
+// https://github.com/sacry-/Scala/tree/master/A5/src
 
 object Run {
   def run() = {
