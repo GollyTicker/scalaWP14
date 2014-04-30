@@ -4,28 +4,30 @@
 import U.undefined
 object U {def undefined = throw new RuntimeException}
 
-case class Time private (val d: => Int, val exp: => Int, val valid: => Boolean) {
+// insteadt of simply saving the number as nsec, μsec, sec etc, I'm saving
+// the decimal digit
+case class Time private (val l: => Long, val isNaTime: => Boolean) {
   lazy val sec:Time = undefined
   lazy val msec:Time = undefined
   lazy val nsec:Time = undefined
   lazy val μsec:Time = undefined
 
-  def +(t:Time):Time = undefined
+  def +(t:Time):Time = new Time(l + t.l, isNaTime || t.isNaTime)
 
-  override def equals(o:Any) = { lazy val t = o.asInstanceOf[Time]; o.isInstanceOf[Time] && d==t.d && exp == t.exp}
+  override def equals(o:Any) = { lazy val t = o.asInstanceOf[Time]; o.isInstanceOf[Time] && nsec == t.nsec}
+  // override
 }
 
 object Time {
-  lazy val NaTime:Time = Time(undefined, undefined, false)
-  def Σ(ts:Time*):Time = undefined
+  lazy val NaTime:Time = Time(undefined, true)
+  def Σ(ts:Time*):Time = ts.sum
 }
 
 object TimeFactory {
   import math.log10
-  def apply(l:Long):Time = new Time(l.toInt%10, log10(l.toDouble).floor.+(1).toInt, true)
+  def apply(l:Long):Time = new Time(l, false)
   def apply(i:Int):Time = TimeFactory(i.toLong)
 }
-
 
 object Ex04 {
   import TimeImplicits._
