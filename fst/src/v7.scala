@@ -3,7 +3,7 @@ import scala.annotation.tailrec
 /**
  * Created by Swaneet on 29.04.2014.
  */
-object vorls7 {
+object v7 {
 
   type ~>[A,B] = PartialFunction[A,B] // Folien: type ~>[-A,+B] = PartialFunction[A,B] // extwas vom Typ A oder spezieller und erzeugt etwas vom Type B oder allgemeiner.
   type ->[A,B] = Function[A,B]  // Haskell like signatures

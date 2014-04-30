@@ -1,7 +1,7 @@
 /**
  * Created by Swaneet on 15.04.2014.
  */
-object vorls5 {
+object v5 {
 
   // ADT- Pattern matching
   // Eine Abstrakter Datentype der eine FIXE ANZAHL von Konstruktoren. Evtl. inverse Operationen dazu.

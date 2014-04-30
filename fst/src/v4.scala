@@ -1,7 +1,7 @@
 /**
  * Created by Swaneet on 08.04.2014.
  */
-object vorls4 {
+object v4 {
 
   import scala.math._
   def sqr = (x:Double) => sqrt(x)
