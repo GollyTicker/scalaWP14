@@ -48,4 +48,18 @@ object vorls7 {
   // Die letzten Parameter werden ja nach Scope automatisch genommen,
   // falls diese weggelassen wurden.
 
+
+  implicit class MyListExtension[A](xs: List[A]) {
+    def headOrElse(default: => A) = xs match {
+      case Nil => default
+      case x :: _ => x
+    }
+  }
+
+  def run() = {
+    println( List(1,2,3).headOrElse(-1) )
+    println( List[Int]().headOrElse(-1) )
+    println( (Nil:List[Int]).headOrElse(-1) )
+  }
+
 }

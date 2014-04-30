@@ -36,7 +36,7 @@ object A6 {
   // hdStreams [] = []
   // hdStreams (x:xs) = map (x:) ([]:hdStreams(xs))
   def headStreams[A](st:Stream[A]):Stream[Stream[A]] = st match {
-  case Empty => Empty
+    case Empty => Empty
     case hd #:: tl => (Empty #:: headStreams(tl)).map( hd #:: _ )
   }
   lazy val exampleHeadStreams = headStreams(from(10).take(5))
