@@ -43,7 +43,17 @@ object MyTime {
 
     override def equals(o: Any) = {lazy val t = o.asInstanceOf[Time]; o.isInstanceOf[Time] && ns == t.ns}
 
-    override def toString = ns + " nsec"
+    override def toString = {
+      lazy val sec_cut:Time  = (ns/K/K/K).sec
+      lazy val msec_cut:Time = (ns/K/K).msec
+      lazy val μsec_cut:Time = (ns/K).μsec
+      ns match {
+       // case _ if sec_cut == this => sec_cut + " sec"
+        //case _ if msec_cut == this => msec_cut + " msec"
+        //case _ if μsec_cut == this => μsec_cut + " μsec"
+        case _ => ns + " nsec"
+      }
+    }
   }
 
   object Time {
@@ -57,6 +67,8 @@ object Ex04 {
   def test {
     import MyTime._
     import MyTime.Time._
+
+
 
     println("10 sec: " + 10.sec)
     println("20 msec: " + 20.msec)
