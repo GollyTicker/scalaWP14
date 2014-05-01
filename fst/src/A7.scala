@@ -7,41 +7,14 @@ object U {
   def undefined = throw new RuntimeException
 }
 
-// Zeit unterstüzt Addition, die Rückgabe der Nanosekunden sowie das Überprüfen auf NaTime
-sealed trait Time {
-  def ns: Long
-  def +(t: Time): Time
-  def isNaTime: Boolean
-}
-
-// Konkrete Time in nanosekunden
-class TimeNS(val l: Long) extends Time {
-  lazy val ns = l
-
-  import Time.NaTime
-
-  override def +(t: Time): Time = t match {
-    case NaTime => NaTime
-    case _ => Time(ns + t.ns)
+object MyTime {
+  // Zeit unterstüzt Addition, die Rückgabe der Nanosekunden sowie das Überprüfen auf NaTime
+  trait Time {
+    def ns: Long
+    def +(t: Time): Time
+    def isNaTime: Boolean
   }
-
-  override def isNaTime = false
-
-  override def equals(o: Any) = {
-    lazy val t = o.asInstanceOf[Time];
-    o.isInstanceOf[Time] && ns == t.ns
-  }
-
-  override def toString = ns + " nsec"
-}
-
-object Time {
-  // nur positive nanosekunden und 0 sind erlaubt
-  def apply(l: Long): Time = if (l >= 0) new TimeNS(l) else NaTime
-
-  def Σ(ts: Time*): Time = ts.foldLeft(Time(0))(_ + _)
-
-  // Konversionen
+  // Konversionen auf Long. public
   private lazy val K = 1000L
   implicit class FancyNum(l: Long) {
     lazy val sec: Time = (l * K).msec
@@ -60,16 +33,30 @@ object Time {
     override def equals(x: Any): Boolean = false
   }
 
-  /*object TimeImplicits {
-    implicit def long2Time(l: Long): Time = Time(l)
-    implicit def int2Time(i: Int): Time = Time(i.toLong)
-  }*/
+  // Konkrete Time in nanosekunden
+  class TimeNS(val l: Long) extends Time {
+    lazy val ns = l
 
+    override def +(t: Time): Time = if (t.isNaTime) NaTime else Time(ns + t.ns)
+
+    override def isNaTime = false
+
+    override def equals(o: Any) = {lazy val t = o.asInstanceOf[Time]; o.isInstanceOf[Time] && ns == t.ns}
+
+    override def toString = ns + " nsec"
+  }
+
+  object Time {
+    // nur positive nanosekunden und 0 sind erlaubt
+    private[MyTime] def apply(l: Long): Time = if (l >= 0) new TimeNS(l) else NaTime
+    def Σ(ts: Time*): Time = ts.foldLeft(Time(0))(_ + _)
+  }
 }
 
 object Ex04 {
   def test {
-    import Time._
+    import MyTime._
+    import MyTime.Time._
 
     println("10 sec: " + 10.sec)
     println("20 msec: " + 20.msec)
