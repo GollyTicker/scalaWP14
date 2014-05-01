@@ -2,62 +2,84 @@
  * Created by Swaneet on 30.04.2014.
  */
 
-import U.undefined
+import U.undefined  // für alle Scopes in diesem Modul bereitstellen
 
 object U {
   def undefined = throw new RuntimeException
 }
 
-// insteadt of simply saving the number as nsec, μsec, sec etc, I'm saving
-// the decimal digit
-case class Time private(val ns: => Long, val isNaTime: => Boolean) {
+// Zeit unterstüzt Addition, die Rückgabe der Nanosekunden sowie das Überprüfen auf NaTime
+sealed trait Time {
+  def +(t:Time):Time
+  def ns:Long
+  def isNaTime:Boolean
+}
 
-  def +(t: Time): Time = new Time(ns + t.ns, isNaTime || t.isNaTime)
+// Konkrete Time in nanosekunden
+class TimeNS(val ns: Long) extends Time {
 
+  import Time.NaTime
+
+  override def +(t: Time):Time = t match {
+    case NaTime => NaTime
+    case _ => Time(ns + t.ns)
+  }
+  override def isNaTime = false
   override def equals(o: Any) = {
-    lazy val t = o.asInstanceOf[Time]; o.isInstanceOf[Time] && ns == t.ns
+    lazy val t = o.asInstanceOf[Time];
+    o.isInstanceOf[Time] && ns == t.ns
   }
 
-  // override def toString() = undefined
+  override def toString = ns + " nsec"
 }
 
 object Time {
-  lazy val NaTime: Time = Time(undefined, true)
+  // nur positive nanosekunden und 0 sind erlaubt
+  def apply(l:Long):Time = if (l >= 0) new TimeNS(l) else NaTime
 
-  def Σ(ts: Time*): Time = ts.sum
+  def Σ(ts: Time*): Time = ts.foldLeft(Time(0))( _+_ )
 
+  // Konversionen
+  private lazy val K = 1000L
   implicit class FancyNum(l: Long) {
-    lazy val sec: Time = undefined
-    lazy val msec: Time = undefined
-    lazy val nsec: Time = undefined
-    lazy val μsec: Time = undefined
+    lazy val sec: Time = (l*K).msec
+    lazy val msec: Time = (l*K).μsec
+    lazy val μsec: Time = (l*K).nsec
+    lazy val nsec: Time = Time(l)
   }
 
-}
+  // das Not A Time singleton
+  object NaTime extends Time {
+    override def +(t:Time):Time = NaTime
+    override def ns = undefined
+    override def isNaTime = true
+    override def toString = "NaTime"
+    override def equals(x:Any): Boolean = false
+  }
 
-object TimeFactory
+  /*object TimeImplicits {
+    implicit def long2Time(l: Long): Time = Time(l)
+    implicit def int2Time(i: Int): Time = Time(i.toLong)
+  }*/
+
+}
 
 object Ex04 {
-
-  import TimeImplicits._
-
   def test {
     import Time._
-    println(10.sec)
-    println(20.msec)
-    println(10.sec + 20.msec)
-    println(20.msec + 10.sec)
-    println(1.nsec + 50.nsec + 20.μsec + 3.msec + 4.sec)
-    println(3.msec + 4.sec + 1.nsec + 20.μsec + 50.nsec)
-    println(Σ(3.msec, 4.sec, 1.nsec, 20.μsec, 50.nsec))
+
+    println("10 sec: " +          10.sec )
+    println("20 msec: " +         20.msec )
+    println("10020 msec: " +      (10.sec + 20.msec) )
+    println("10020 msec: " +      (20.msec + 10.sec) )
+    println("4003020051 nsec: " + (1.nsec + 50.nsec + 20.μsec + 3.msec + 4.sec) )
+    println("4003020051 nsec: " + (3.msec + 4.sec + 1.nsec + 20.μsec + 50.nsec) )
+    println("4003020051 nsec: " + Σ(3.msec, 4.sec, 1.nsec, 20.μsec, 50.nsec) )
+
     // 10.sec.sec //<- compiliert nicht
     // 10.sec + 10 //<- compiliert nicht
-    println((-1).sec)
-    println(Σ(3.msec, 4.sec, 1.nsec, NaTime, 20.μsec, 50.nsec))
-  }
-}
 
-object TimeImplicits {
-  implicit def long2Time(l: Long): Time = undefined
-  implicit def int2Time(i: Int): Time = undefined
+    println("NaTime: " +          (-1).sec )
+    println("NaTime: " +          Σ(3.msec, 4.sec, 1.nsec, NaTime, 20.μsec, 50.nsec) )
+  }
 }
