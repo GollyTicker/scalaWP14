@@ -102,4 +102,34 @@ object A8 {
     println( use2(f) (0.0) (-2.0) )
     println( use2(f) (0.0) (-2.0) == 0.0 )
   }
+
+
+  trait Functor[F[_]] {
+    def fmap[A,B](fa:F[A], f: A => B):F[B]
+  }
+
+  val listFunctor:Functor[List] = new Functor[List] {
+    def fmap[A,B](ls:List[A], f: A => B) = ls.map(f)
+  }
+  val optionFunctor:Functor[Option] = new Functor[Option] {
+    def fmap[A,B](ma:Option[A], f: A => B) = ma.map(f)
+  }
+
+  def testFunctor() = {
+
+    println(listFunctor.fmap(List("Hello", "Students", "!"), (s:String) => s.size ))
+    println(listFunctor.fmap(List("Hello", "Students", "!"), (s:String) => s.size ) == List(5, 8, 1))
+
+    import scala.collection._
+    val romanNums = Map("I"->1, "II"->2, "III"->3 )  // Idea shows misleading "cannot resolve symbol" bug
+
+    println(optionFunctor.fmap(romanNums.get("II"), (i:Int) => i*2) )
+    println(optionFunctor.fmap(romanNums.get("II"), (i:Int) => i*2) == Some(4))
+    println(optionFunctor.fmap(romanNums.get("IIII"), (i:Int) => i*2) )
+    println(optionFunctor.fmap(romanNums.get("IIII"), (i:Int) => i*2) == None)
+  }
+
+
+
+
 }
