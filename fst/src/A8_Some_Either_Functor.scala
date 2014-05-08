@@ -29,31 +29,44 @@ object A8 {
   val customers = List(Left(Person("P1")),Left(Person("P2")), Right(Company(Person("CEO1"))), Left(Person("P3")),
     Right(Company(Person("CEO2"))),Right(Company(Person("CEO3"))), Left(Person("P3")))
 
-  def sortEither[A, B](ls:List[Either[A,B]]):List[Either[A,B]] =
-     selectPersons(ls).sorted.map( Left(_)) ++ selectCompanies(ls).sorted.map( Right(_))
+  def sortEither(ls:List[Either[Person,Company]]):List[Either[Person,Company]] = ls match {
+    case Nil => Nil
+    case pivot :: xs => {
+      val smaller = xs.filter( e => cmpEither(e, pivot) <= 0 )
+      val bigger= xs.filter( e => cmpEither(e,pivot) > 0 )
+      smaller ++ List(pivot) ++ bigger
+    }
+  }
 
-  val sorted = (List(Left(Person("P1")), Left(Person("P2")), Left(Person("P3")),Left(Person("P3"))),
+  def cmpEither(fst: Either[Person,Company], snd: Either[Person,Company]):Int = () match {
+    //case _ if fst.isLeft && snd.isLeft => fst compare snd // compiliert nicht...... diverging implitic expansion for type ....
+    //case _ if fst.isRight && snd.isRight => fst compare snd
+    case _ => -1
+  }
+
+  val sortResult = (List(Left(Person("P1")), Left(Person("P2")), Left(Person("P3")),Left(Person("P3"))),
     List(Right(Company(Person("CEO1"))), Right(Company(Person("CEO2"))), Right(Company(Person("CEO3")))))
 
-  def selectPersons[A, B](ls:List[Either[A,B]]):List[A] = ???
+  def selectPersons[A, B](ls:List[Either[A,B]]):List[A] = ls.flatMap{ case Left(x) => List(x); case Right(x) => Nil }
 
   val persons = List(Person("P1"), Person("P2"), Person("P3"), Person("P3"))
 
-  def selectCompanies[A, B](ls:List[Either[A,B]]):List[B] = ???
+  def selectCompanies[A, B](ls:List[Either[A,B]]):List[B] = ls.flatMap{ case Left(x) => Nil; case Right(x) => List(x) }
 
   val companies = List(Company(Person("CEO1")), Company(Person("CEO2")), Company(Person("CEO3")))
 
   def testEither() {
 
-    println(customers + "\n")
-    println(sortEither(customers) == sorted)
-    println(sortEither(customers) + "\n")
+    println(customers)
+
+    println(sortEither(customers) == sortResult)
+    println(sortEither(customers))
 
     println(selectPersons(customers) == persons)
-    println(selectPersons(customers) + "\n")
+    println(selectPersons(customers))
 
     println(selectCompanies(customers) == companies)
-    println(selectCompanies(customers) + "\n")
+    println(selectCompanies(customers))
 
 
   }
