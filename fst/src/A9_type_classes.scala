@@ -8,9 +8,8 @@ object A9 {
   }
 
   def a1() = {
-    import CSV._
+    import CarCSV._
     val x = new Car(1997, "Ford", "E350", "ac, abs, moon", 3000.00)
-
     println(x)
     println(csv(x))
 
@@ -22,13 +21,8 @@ object CSV {
   trait CSV[T] {
     def csv(value: T): String
   }
-
-  object csv {
-    // shortcut
-    def apply[A <: CSV[A]](x: A): String = x.csv(x)
-  }
-
 }
+
 
 class Car(
            val year: Int,
@@ -36,9 +30,11 @@ class Car(
            val model: String,
            val description: String,
            val price: Double
-           )
-  extends CSV.CSV[Car] {
+           ) {
   override def toString(): String = List("" + year, make, model, description, "" + price).mkString(",")
+}
 
-  def csv(x: Car): String = x.toString
+object CarCSV extends CSV.CSV[Car] {
+  // hier der typeclass instance (außerhalb der KLassendefinition)
+  def csv(c: Car): String = c.toString()
 }
