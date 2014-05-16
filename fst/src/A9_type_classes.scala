@@ -14,15 +14,56 @@ object A9 {
     println(csv(x))
 
   }
-}
 
-object CSV {
+  def a2() = {
+    import MatrixImplicits._
+    val mat = Matrix(1, 2, 3, 4, 5, 6, 7, 8, 9)
+    // println(mat * 5 == 5 * mat) // ???
+  }
 
-  trait CSV[T] {
-    def csv(value: T): String
+  def a3() = {
+
   }
 }
 
+trait CSV[T] {
+  def csv(value: T): String
+}
+
+trait Scale[T] {
+  def *(s: Double, x: T): T
+}
+
+object MatrixImplicits {
+
+  implicit object MatrixScale extends Scale[Matrix] {
+    def *(s: Double, x: Matrix): Matrix = x * s
+  }
+
+  implicit object MatrixNumeric extends math.Numeric[Matrix] {
+
+    def plus(x: Matrix, y: Matrix): Matrix = x + y
+
+    def toDouble(x: Matrix): Double = x(0, 0)
+
+    def toFloat(x: Matrix): Float = toDouble(x).toFloat
+
+    def toLong(x: Matrix): Long = toDouble(x).toLong
+
+    def toInt(x: Matrix): Int = toDouble(x).toInt
+
+    def fromInt(x: Int): Matrix = Matrix(1, x)
+
+    def negate(x: Matrix): Matrix = -x
+
+    def times(x: Matrix, y: Matrix): Matrix = x * y
+
+    def minus(x: Matrix, y: Matrix): Matrix = x - y
+
+    def compare(x: Matrix, y: Matrix): Int = ???
+  }
+
+}
 
 class Car(
            val year: Int,
@@ -34,7 +75,31 @@ class Car(
   override def toString(): String = List("" + year, make, model, description, "" + price).mkString(",")
 }
 
-object CarCSV extends CSV.CSV[Car] {
+object CarCSV extends CSV[Car] {
   // hier der typeclass instance (außerhalb der KLassendefinition)
   def csv(c: Car): String = c.toString()
 }
+
+trait BaseUnit
+
+trait Meter extends BaseUnit
+
+trait Kelvin extends BaseUnit
+
+trait Second extends BaseUnit
+
+trait Quantity {
+  type unit <: BaseUnit
+
+  def value: Double
+}
+
+trait QMonoid[Q <: Quantity] {
+  def plus(x: Q, y: Q): Q
+}
+
+/*
+*
+*
+*
+* */
