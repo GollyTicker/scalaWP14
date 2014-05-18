@@ -5,6 +5,8 @@ object A9 {
 
   def run() = {
     a1()
+
+    A9_A3.a3()
   }
 
   def a1() = {
@@ -21,9 +23,7 @@ object A9 {
     // println(mat * 5 == 5 * mat) // ???
   }
 
-  def a3() = {
 
-  }
 }
 
 trait CSV[T] {
@@ -90,7 +90,6 @@ trait Second extends BaseUnit
 
 trait Quantity {
   type unit <: BaseUnit
-
   def value: Double
 }
 
@@ -98,8 +97,37 @@ trait QMonoid[Q <: Quantity] {
   def plus(x: Q, y: Q): Q
 }
 
-/*
-*
-*
-*
-* */
+case class Length(val d:Double)
+case class Temperature(val d:Double)
+case class Time(val d:Double)
+
+
+object unitImplicits {
+  implicit class Length2(val d:Double) extends Quantity {
+    type unit = Meter
+    val value = d
+  }
+  implicit class Temperature2(val d:Double) extends Quantity {
+    type unit = Kelvin
+    val value = d
+  }
+  implicit class Time2(val d:Double) extends Quantity {
+    type unit = Second
+    val value = d
+  }
+
+}
+
+def add[Q <: Quantity : QMonoid](x: Q, y: Q): Q = implicitly[QMonoid[Q]].plus(x, y)
+
+object A9_A3 {
+  def a3() = {
+    import unitImplicits._
+    println(add(Length(1), Length(2.7)))
+    println(add(Temperature(273.15), Temperature(30.0)))
+    println(add(Time(100), Time(50)))
+    println(Length(1) + Length(2.7))
+    println(Temperature(273.15) + Temperature(30.0))
+    println(Time(100) + Time(50))
+  }
+}
