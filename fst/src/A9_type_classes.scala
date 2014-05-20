@@ -116,18 +116,19 @@ object unitImplicits {
     val value = d
   }
 
+  def add[Q <: Quantity : QMonoid](x: Q, y: Q): Q = implicitly[QMonoid[Q]].plus(x, y)
 }
 
-def add[Q <: Quantity : QMonoid](x: Q, y: Q): Q = implicitly[QMonoid[Q]].plus(x, y)
+
 
 object A9_A3 {
   def a3() = {
     import unitImplicits._
-    println(add(Length(1), Length(2.7)))
-    println(add(Temperature(273.15), Temperature(30.0)))
-    println(add(Time(100), Time(50)))
-    println(Length(1) + Length(2.7))
-    println(Temperature(273.15) + Temperature(30.0))
-    println(Time(100) + Time(50))
+    //println(add(Length(1), Length(2.7)))
+    //println(add(Temperature(273.15), Temperature(30.0)))
+    //println(add(Time(100), Time(50)))
+    //println(Length(1) + Length(2.7))
+    //println(Temperature(273.15) + Temperature(30.0))
+    //println(Time(100) + Time(50))
   }
 }
