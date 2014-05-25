@@ -119,5 +119,6 @@ object baseUnitAufgabe {
     // Length(1) + Time(2)  // <- compiliert nicht
 
     // this is a "shapeless non-compilaton" example !!
+    // https://github.com/milessabin/shapeless/wiki/Feature-overview:-shapeless-2.0.0#testing-for-non-compilation
   }
 }
