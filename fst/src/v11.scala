@@ -146,7 +146,8 @@ object v11 {
       // Dispatcher ( Welcher Handler soll für diese Message verwendet werden? )
       // Message wird aus Mailbox gelöscht
 
-
+    // Sicherheit. Messages müssen in endlicher Zeit sicher zugestellt und bearbeitet werden.
+        // sehr schwer sicher zustellen (eigentlich unmöglich 100% sicherzustellen)
   }
 
 }
