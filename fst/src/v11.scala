@@ -92,6 +92,61 @@ object v11 {
     val sdf = 2332423
     println(s"Hello: sdf")
 
+
+
+    // AKTOREN MODELL -- AKTOREN MODELL -- AKTOREN MODELL -- AKTOREN MODELL
+
+    // ScaleUp -> Futures machen Programme mit Prozesse skalierbar
+    // ScaleOut -> Aktoren machen RPogramme mit mehreren Prozessen fehlsicher
+
+    // Aktor Modell
+    // funktional, value-oriented, MultiCores, distributiv
+
+    // scalesUp, scalesOut
+    // eingebaute Fehlertoleranz (self-healing)
+    // transparentes Load Balancing
+
+    // Strong isolation
+      // processe teilen keinen State
+      // processes are units of error encapsulation
+      // processe fail as soon as processes
+      // error in a process dont affect another procress
+      // errors in a process an be detected my other processes
+
+    // 99.999999999% Availability per year => 31ms / year
+
+    // Actor vs. Object
+      // siehe Folien
+      // Wegen ihrer Speicherung im Heap/Stack und Referenzierung mit Pointer
+      // lassen sich Objekte nicht verschieben.
+    // Actor ->
+    // lock free concurrency
+    // asynchronous messaging
+    // share no states
+
+    // Tree of Actors
+
+    // 1: Supervisors
+    // 2: Supervisors - 2
+    // ...
+    // n-1: Workers & Supervisors
+    // n: Workers
+
+
+    // Vorteile:
+    // Actoren sind bei default nicht blockierend
+    // können zwishcen Threads und CPUs wandernd (weil keine Speicherreferenz)
+    // Referenzen auf Actors sind nicht-place oriented
+
+    // Merkmale
+    // Jeder angeforderte Servie resultiert in einen weiteren Message als Antwort zurück
+    // (oder eine Weiterleitung des Ergebnisses an ein anderes Objekt) (z.B. A fragt B. B schickt Antwort zu C.)
+
+    // Nachricht
+      // Dispatcher ( Welcher Handler soll für diese Message verwendet werden? )
+      // Message wird aus Mailbox gelöscht
+
+
   }
 
 }
