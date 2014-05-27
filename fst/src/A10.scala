@@ -1,3 +1,6 @@
+
+import scala.concurrent.Future
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.Try
 
 /**
@@ -27,23 +30,95 @@ object A10 {
     else
       throw new Exception("makeOrder")
 
-  def buyShares(brokerUri: String, shareId: String): Try[Order] = {
+  // Sequentiell 1
+  def buySharesSeq1(brokerUri: String, shareId: String): Try[Order] = {
     for {
-      /* START mein Code START */
-      broker <- Try { connectToBroker(brokerUri) }
-      share <- Try { broker.shareInfo(shareId) }
-      order <- Try { makeOrder(share, 500) }
+    /* START mein Code START */
+      broker <- Try(connectToBroker(brokerUri))
+      share <- Try(broker.shareInfo(shareId))
+      order <- Try(makeOrder(share, share.curPrice * 1.0))
     /* ENDE mein Code ENDE */
     } yield broker.contract(order)
   }
 
-  def apply() = {
-    println("Success(Order(SAP,500.0,100)): ")
-    println(buyShares("uri", "SAP"))
-    println("Failure(java.lang.Exception: connectToBroker): ")
-    println(buyShares("", "SAP"))
-    println("Failure(java.lang.Exception: shareInfo): ")
-    println(buyShares("uri", "SA"))
+  // Broker Cont
+  def buySharesSeq2(brokerUri: String, shareIds: String*): Try[Seq[Try[Order]]] = {
+    /* START mein Code START */
+    for {
+      broker <- Try(connectToBroker(brokerUri))
+      results = for {shareId <- shareIds;
+                     res = for {
+                       share <- Try(broker.shareInfo(shareId))
+                       order <- Try(makeOrder(share, share.curPrice * 1.0))
+                     } yield broker.contract(order)
+      } yield res // result eines einzigen Versuchs
+    } yield results // result aller Versuche ist selber auhc ein Try. (Weil das Connect failen könnte.)
+    /* ENDE mein Code ENDE */
+  }
+
+  // Broker Cont (Try kürzer)     // funzt nicht .....
+  def buySharesSeq3(brokerUri: String, shareIds: String*): Try[Seq[Try[Order]]] = {
+    /* START mein Code START */
+    for {
+      broker <- Try(connectToBroker(brokerUri))
+      results = for {shareId <- shareIds;
+                     res = { val share = broker.shareInfo(shareId)
+                             Try(broker.contract(makeOrder(share, share.curPrice * 1.0)))
+                     }
+      } yield res
+    } yield results
+    /* ENDE mein Code ENDE */
+  }
+
+  // Broker Future
+  def buySharesConc1(brokerUri: String, shareIds: String*): Future[Seq[Future[Order]]] = {
+    /* START mein Code START */
+    for {
+      broker <- Future(connectToBroker(brokerUri))
+      futures = for {shareId <- shareIds;
+                     res = for {
+                       share <- Future(broker.shareInfo(shareId))
+                       order <- Future(makeOrder(share, share.curPrice * 1.0))
+                     } yield broker.contract(order)
+      } yield res // result eines einzigen Versuchs
+    } yield futures
+    /* ENDE mein Code ENDE */
+  }
+
+  def apply(x: Int) = x match {
+    case 1 => {
+      println(buySharesSeq1("uri", "SAP"))
+      println(buySharesSeq1("", "SAP"))
+      println(buySharesSeq1("uri", "SA"))
+      // Success(Order(SAP,500.0,100))
+      // Failure(java.lang.Exception: connectToBroker)
+      // Failure(java.lang.Exception: shareInfo)
+    }
+    case 2 => {
+      println(buySharesSeq2("uri", "SAP", "SQP"))
+      println(buySharesSeq2("", "SAP", "SAP"))
+      println(buySharesSeq2("uri", "SAP", "SAP", "SA"))
+      // Success(ArrayBuffer(Success(Order(SAP,500.0,100)), Failure(java.lang.Exception: shareInfo)))
+      // Failure(java.lang.Exception: connectToBroker)
+      // Success(ArrayBuffer(Success(Order(SAP,500.0,100)), Success(Order(SAP,500.0,100)), Failure(java.lang.Exception: shareInfo)))
+    }
+    case 3 => {
+      println(buySharesSeq3("uri", "SAP", "SQP"))
+      println(buySharesSeq3("", "SAP", "SAP"))
+      println(buySharesSeq3("uri", "SAP", "SAP", "SA"))
+      // Success(ArrayBuffer(Success(Order(SAP,500.0,100)), Failure(java.lang.Exception: shareInfo)))
+      // Failure(java.lang.Exception: connectToBroker)
+      // Success(ArrayBuffer(Success(Order(SAP,500.0,100)), Success(Order(SAP,500.0,100)), Failure(java.lang.Exception: shareInfo)))
+    }
+    case 4 => {
+      println(buySharesConc1("uri", "SAP", "SQP"))
+      println(buySharesConc1("", "SAP", "SAP"))
+      println(buySharesConc1("uri", "SAP", "SAP", "SA"))
+      // Success(ArrayBuffer(Success(Order(SAP,500.0,100)), Failure(java.lang.Exception: shareInfo)))
+      // Failure(java.lang.Exception: connectToBroker)
+      // Success(ArrayBuffer(Success(Order(SAP,500.0,100)), Success(Order(SAP,500.0,100)), Failure(java.lang.Exception: shareInfo)))
+    }
+    case _ => ()
   }
 
 }

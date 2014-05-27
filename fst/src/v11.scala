@@ -88,7 +88,9 @@ object v11 {
       // im ersten Fall landen die Futures schon beim "val f = ..." in dem Threadpool und werden berechnet
     }
 
-
+    // type safe printf
+    val sdf = 2332423
+    println(s"Hello: sdf")
 
   }
 
