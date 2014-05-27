@@ -1,6 +1,4 @@
 
-import scala.concurrent.Future
-import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.Try
 
 /**
@@ -69,22 +67,6 @@ object A10 {
     } yield results
     /* ENDE mein Code ENDE */
   }
-
-  // Broker Future
-  def buySharesConc1(brokerUri: String, shareIds: String*): Future[Seq[Future[Order]]] = {
-    /* START mein Code START */
-    for {
-      broker <- Future(connectToBroker(brokerUri))
-      futures = for {shareId <- shareIds;
-                     res = for {
-                       share <- Future(broker.shareInfo(shareId))
-                       order <- Future(makeOrder(share, share.curPrice * 1.0))
-                     } yield broker.contract(order)
-      } yield res // result eines einzigen Versuchs
-    } yield futures
-    /* ENDE mein Code ENDE */
-  }
-
   def apply(x: Int) = x match {
     case 1 => {
       println(buySharesSeq1("uri", "SAP"))
@@ -106,14 +88,6 @@ object A10 {
       println(buySharesSeq3("uri", "SAP", "SQP"))
       println(buySharesSeq3("", "SAP", "SAP"))
       println(buySharesSeq3("uri", "SAP", "SAP", "SA"))
-      // Success(ArrayBuffer(Success(Order(SAP,500.0,100)), Failure(java.lang.Exception: shareInfo)))
-      // Failure(java.lang.Exception: connectToBroker)
-      // Success(ArrayBuffer(Success(Order(SAP,500.0,100)), Success(Order(SAP,500.0,100)), Failure(java.lang.Exception: shareInfo)))
-    }
-    case 4 => {
-      println(buySharesConc1("uri", "SAP", "SQP"))
-      println(buySharesConc1("", "SAP", "SAP"))
-      println(buySharesConc1("uri", "SAP", "SAP", "SA"))
       // Success(ArrayBuffer(Success(Order(SAP,500.0,100)), Failure(java.lang.Exception: shareInfo)))
       // Failure(java.lang.Exception: connectToBroker)
       // Success(ArrayBuffer(Success(Order(SAP,500.0,100)), Success(Order(SAP,500.0,100)), Failure(java.lang.Exception: shareInfo)))
