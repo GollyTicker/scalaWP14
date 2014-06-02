@@ -7,14 +7,25 @@ import duration._
 import ExecutionContext.Implicits.global
 import scala.concurrent._
 import myUtils.ExecTiming._
+import myUtils.await
 
 object A11 {
 
   def apply(x:Int = 1000) = {
-    val m0 = IMatrix(10, (i, j) => if (i == j) i + 1 else 0)
+    val m0 = IMatrix(6, (i, j) => if (i == j) i + 1 else 0)
     val m3 = IMatrix(x, (i, j) => i + j)  // 500 -> 15sec, 250 -> 2.2ec, 100 -> 0.1sec
+
     printResultAndMillis(m0 * m0)
-    printMillis(m3 * m3)
+
+    val slow1 = millis(m0 slowMult m0)
+    val slow2 = millis(m3 slowMult m3)
+
+    val fast1 = millis(m0 * m0)
+    val fast2 = millis(m3 * m3)
+
+    println("slow vs. fast")
+    println(slow1 + " vs. " + fast1)
+    println(slow2 + " vs. " + fast2)
   }
 
 }
@@ -25,43 +36,34 @@ class IMatrix(val dim: Int, private val arr: Array[Int]) {
   val get: (Int, Int) => Int =
     (i, j) => apply(i, j).get
 
-  private val set: (Int, Int) => Array[Int] => Int => Unit =
-    (i, j) => arr => v => {
-      arr.update(dim * i + j, v); ()
-    }
+  // (A*B)(i)(j) == sum {k, 1, n, A(i)(k) * B(k)(j)
+  def slowMult(that:IMatrix):IMatrix = {
+    val res = Array.fill(dim * dim)(0)
+    val set: (Int, Int) => Array[Int] => Int => Unit = (i, j) => arr => v => { arr.update(dim * i + j, v); () }
+    def calcElem(i: Int, j: Int) = set(i, j)(res) ( (0 until dim).map(k => get(i, k) * get(k, j)).sum )
+    for { i <- 0 until dim; j <- 0 until dim; a = calcElem(i, j) } yield ()
+    new IMatrix(dim, res)
+  }
 
   def *(that: IMatrix): IMatrix = {
-    def calcPartition(from: Int, to: Int, res: Array[Int]): Int = {
-      var n = 0 // nur zur Kontrolle, nicht relevant für Multiplikation
-      for (i <- from until to)
-        for (j <- 0 until dim) {
-          var sum = 0
-          for (k <- 0 until dim)
-            sum += arr(i * dim + k) * that.arr(k * dim + j)
-          res(i * dim + j) = sum
-          n += 1
-        }
-      n
-    }
-
-
     val res = Array.fill(dim * dim)(0)
+    val set: (Int, Int) => Array[Int] => Int => Unit = (i, j) => arr => v => { arr.update(dim * i + j, v); () }
 
     def calcElem(i: Int, j: Int) = {
-      set(i, j)(res) {
-        (0 until dim).map(k => get(i, k) * get(k, j)).sum
-      }
+      Future(set(i, j)(res) {
+        (0 until dim).map(k => arr(i *dim +  k) * that.get(k, j)).sum
+      })
     }
-
     // (A*B)(i)(j) == sum {k, 1, n, A(i)(k) * B(k)(j)
-    for {
+    val workers = for {
       i <- 0 until dim
       j <- 0 until dim
-      calcSum = calcElem(i, j)
-    } yield ()
+    } yield calcElem(i, j)
 
-
-    new IMatrix(dim, res)
+    workers.foreach( f => Await.ready(f,Duration.Inf) )
+    val ret = new IMatrix(dim, res)
+    println("should not be 0:" + ret(dim-1,dim-1))
+    ret
   }
 
   override def toString = {
