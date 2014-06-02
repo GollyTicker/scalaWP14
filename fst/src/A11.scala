@@ -7,15 +7,20 @@ import duration._
 import ExecutionContext.Implicits.global
 import scala.concurrent._
 import myUtils.ExecTiming._
-import myUtils.await
 
 object A11 {
+  import Stream._
+  val stdls = Stream.from(1).map( 2 ^ _ ).takeWhile( _ < 600 ).filter( _ > 100).toList
 
-  def apply(x:Int = 1000) = {
+  def runMulti(ls:List[Int] = stdls) = {
+    ls.foreach( n => apply(n, verbose = false) )
+  }
+
+  def apply(x:Int = 1000,verbose:Boolean = true) = {
     val m0 = IMatrix(6, (i, j) => if (i == j) i + 1 else 0)
-    val m3 = IMatrix(x, (i, j) => i + j)  // 500 -> 15sec, 250 -> 2.2ec, 100 -> 0.1sec
+    val m3 = IMatrix(x, (i, j) => i + j)
 
-    printResultAndMillis(m0 * m0)
+    if(verbose) printResultAndMillis(m0 * m0)
 
     val slow1 = millis(m0 slowMult m0)
     val slow2 = millis(m3 slowMult m3)
@@ -23,9 +28,9 @@ object A11 {
     val fast1 = millis(m0 * m0)
     val fast2 = millis(m3 * m3)
 
-    println("slow vs. fast")
-    println(slow1 + " vs. " + fast1)
-    println(slow2 + " vs. " + fast2)
+    println("slow vs. fast:")
+    println(s"\t$slow1 vs. $fast1")
+    println(s"\t$slow2 vs. $fast2")
   }
 
 }
@@ -62,7 +67,7 @@ class IMatrix(val dim: Int, private val arr: Array[Int]) {
 
     workers.foreach( f => Await.ready(f,Duration.Inf) )
     val ret = new IMatrix(dim, res)
-    println("should not be 0:" + ret(dim-1,dim-1))
+    //println("should not be 0:" + ret(dim-1,dim-1))
     ret
   }
 
