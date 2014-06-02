@@ -1,0 +1,34 @@
+Cores : 4
+OS : Windows 7 6.1 (x86)
+JVM : 1.7.0_21
+
+For n  100:
+slow vs. fast:
+	time: ~0,072ms vs. time: ~0,107ms
+	time: ~117,776ms vs. time: ~62,738ms
+
+For n = 200:
+slow vs. fast:
+	time: ~0,063ms vs. time: ~0,249ms
+	time: ~963,711ms vs. time: ~488,206ms
+
+
+For n = 500:
+slow vs. fast:
+	time: ~0,075ms vs. time: ~0,463ms
+	time: ~15513,438ms vs. time: ~6288,138ms
+
+For n = 600:
+slow vs. fast:
+	time: ~0,069ms vs. time: ~0,465ms
+	time: ~25483,680ms vs. time: ~11152,597ms
+
+For n = 1000: (slow not recorded because it was too slow....)
+slow vs. fast:
+    x vs. ~0,397ms
+    x vs. ~50761,104ms
+
+And with enough patience:
+slow vs. fast:
+	~2,756ms vs. ~0,660ms
+	~131781,389ms vs. ~59194,511ms
