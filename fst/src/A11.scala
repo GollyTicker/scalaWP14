@@ -7,23 +7,29 @@ import duration._
 import ExecutionContext.Implicits.global
 import scala.concurrent._
 import myUtils.ExecTiming._
+import myUtils.OSEnvironment._
 
 object A11 {
-  import Stream._
-  val stdls = Stream.from(1).map( 2 ^ _ ).takeWhile( _ < 600 ).filter( _ > 100).toList
 
-  def runMulti(ls:List[Int] = stdls) = {
-    ls.foreach( n => apply(n, verbose = false) )
-  }
-
-  def apply(x:Int = 1000,verbose:Boolean = true) = {
+  def apply(x:Int = 1000, withSlow :Boolean= true) = {
     val m0 = IMatrix(6, (i, j) => if (i == j) i + 1 else 0)
     val m3 = IMatrix(x, (i, j) => i + j)
 
-    if(verbose) printResultAndMillis(m0 * m0)
+    // printOSSpecs
 
-    val slow1 = millis(m0 slowMult m0)
-    val slow2 = millis(m3 slowMult m3)
+    // Cores : 4
+    // OS : Windows 7 6.1 (x86)
+    // JVM : 1.7.0_21
+
+    // printResultAndMillis(m0 * m0)
+
+    var slow1 = "x"
+    var slow2 = "x"
+
+    if(withSlow){
+      slow1 = millis(m0 slowMult m0)
+      slow2 = millis(m3 slowMult m3)
+    }
 
     val fast1 = millis(m0 * m0)
     val fast2 = millis(m3 * m3)
@@ -31,6 +37,8 @@ object A11 {
     println("slow vs. fast:")
     println(s"\t$slow1 vs. $fast1")
     println(s"\t$slow2 vs. $fast2")
+
+    // Results are in A11-out.txt
   }
 
 }
@@ -55,20 +63,17 @@ class IMatrix(val dim: Int, private val arr: Array[Int]) {
     val set: (Int, Int) => Array[Int] => Int => Unit = (i, j) => arr => v => { arr.update(dim * i + j, v); () }
 
     def calcElem(i: Int, j: Int) = {
-      Future(set(i, j)(res) {
+      Future(set(i, j)(res) {   // Änderung 1
         (0 until dim).map(k => arr(i *dim +  k) * that.get(k, j)).sum
       })
     }
-    // (A*B)(i)(j) == sum {k, 1, n, A(i)(k) * B(k)(j)
     val workers = for {
       i <- 0 until dim
       j <- 0 until dim
     } yield calcElem(i, j)
 
-    workers.foreach( f => Await.ready(f,Duration.Inf) )
-    val ret = new IMatrix(dim, res)
-    //println("should not be 0:" + ret(dim-1,dim-1))
-    ret
+    workers.foreach( f => Await.ready(f,Duration.Inf) ) // Änderung 2
+    new IMatrix(dim, res)
   }
 
   override def toString = {
