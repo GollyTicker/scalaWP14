@@ -3,7 +3,7 @@ import scala.concurrent.duration.Duration
 import scala.util.{Failure, Success, Try}
 import scala.concurrent._
 import ExecutionContext.Implicits.global
-import myUtils.exec
+import myUtils.{await,exec}
 
 /**
  * Created by Swaneet on 27.05.2014.
@@ -101,11 +101,6 @@ object A10 {
       } yield 0
     }
     case _ => ()
-  }
-
-  def await[A](x: Future[A]) = {
-    Await.ready(x, Duration.Inf)
-    x
   }
 }
 
