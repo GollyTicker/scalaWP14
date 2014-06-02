@@ -41,14 +41,23 @@ object myUtils {
     }
 
     def printMillis[A](block: => A) {
-      val (result,nanoTime)= resultAndNanos(block)
-      println("time: "+ "~%.3fms".format((nanoTime/1000L)/1000.0)+ "\n")
+      println(millis(block))
     }
 
     def printResultAndMillis[A](block: => A) {
-      val (result,nanoTime)= resultAndNanos(block)
-      println(result + "\ntime: "+ "~%.3fms".format((nanoTime/1000L)/1000.0)+ "\n")
+      println(resultAndMillis(block))
     }
+
+    def millis[A](block: => A):String = {
+      val (result,nanoTime)= resultAndNanos(block)
+      "time: "+ "~%.3fms".format((nanoTime/1000L)/1000.0)
+    }
+
+    def resultAndMillis[A](block: => A):String = {
+      val (result,nanoTime)= resultAndNanos(block)
+      result + "\ntime: "+ "~%.3fms".format((nanoTime/1000L)/1000.0)
+    }
+
   }
 
 }
