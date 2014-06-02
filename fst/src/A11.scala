@@ -10,9 +10,9 @@ import myUtils.ExecTiming._
 
 object A11 {
 
-  def apply() = {
+  def apply(x:Int = 1000) = {
     val m0 = IMatrix(10, (i, j) => if (i == j) i + 1 else 0)
-    val m3 = IMatrix(1000, (i, j) => i + j)
+    val m3 = IMatrix(x, (i, j) => i + j)  // 500 -> 15sec, 250 -> 2.2ec, 100 -> 0.1sec
     printResultAndMillis(m0 * m0)
     printMillis(m3 * m3)
   }
@@ -46,8 +46,6 @@ class IMatrix(val dim: Int, private val arr: Array[Int]) {
 
 
     val res = Array.fill(dim * dim)(0)
-
-
 
     def calcElem(i: Int, j: Int) = {
       set(i, j)(res) {
