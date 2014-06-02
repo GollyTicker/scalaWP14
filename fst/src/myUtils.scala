@@ -1,3 +1,6 @@
+import scala.concurrent.duration.Duration
+import scala.concurrent.{Await, Future}
+
 /**
  * Created by Swaneet on 02.06.2014.
  */
@@ -8,6 +11,11 @@ object myUtils {
     val r= block
     println(s"stop $name.")
     r
+  }
+
+  def await[A](x: Future[A]) = {
+    Await.ready(x, Duration.Inf)
+    x
   }
 
   object OSEnvironment {
