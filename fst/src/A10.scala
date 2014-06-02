@@ -1,10 +1,18 @@
 
-import scala.util.Try
+import scala.concurrent.duration.Duration
+import scala.util.{Failure, Success, Try}
+import scala.concurrent._
+import ExecutionContext.Implicits.global
+import myUtils.exec
 
 /**
  * Created by Swaneet on 27.05.2014.
  */
 object A10 {
+
+  // Aufrufen mit A10(0) bis A10(2) in Console
+
+  val delay = 1000
 
   case class Share(shareId: String, curPrice: Double)
 
@@ -12,21 +20,24 @@ object A10 {
 
   class Broker {
     def shareInfo(shareId: String): Share =
-      if (shareId == "SAP") Share("SAP", 500.00) else throw new Exception("shareInfo")
+      exec("shareInfo", delay, (if (shareId == "SAP") Share("SAP", 500.00) else throw new Exception("shareInfo")))
 
     def contract(order: Order): Order =
-      if (order.shareId == "SAP" && order.price >= 500) order
-      else throw new Exception("contract")
+      exec("contract", delay, {
+        if (order.shareId == "SAP" && order.price >= 500) order
+        else throw new Exception("contract")
+      })
   }
 
   def connectToBroker(uri: String): Broker =
-    if (uri != "") new Broker else throw new Exception("connectToBroker")
+    exec("connectToBroker", delay, (if (uri != "") new Broker else throw new Exception("connectToBroker")))
 
-  def makeOrder(share: Share, priceLimit: Double): Order =
+  def makeOrder(share: Share, priceLimit: Double): Order = exec("makeOrder", delay, {
     if (share.curPrice <= priceLimit)
       Order("SAP", priceLimit, 100)
     else
       throw new Exception("makeOrder")
+  })
 
   // Sequentiell 1
   def buySharesSeq1(brokerUri: String, shareId: String): Try[Order] = {
@@ -54,47 +65,48 @@ object A10 {
     /* ENDE mein Code ENDE */
   }
 
-  // Broker Cont (Try kürzer)     // funzt nicht .....
-  def buySharesSeq3(brokerUri: String, shareIds: String*): Try[Seq[Try[Order]]] = {
-    /* START mein Code START */
+  // Broker Async
+  def buySharesAsync1(brokerUri: String, shareIds: String*): Future[Seq[Future[Order]]] = {
+    val brokerConnFut = Future(connectToBroker(brokerUri))
+
+    val futShr: Broker => String => Future[Share] = b => shrId => Future(b.shareInfo(shrId))
+    val futOrd: Share => Double => Future[Order] = shr => newPrice => Future(makeOrder(shr, newPrice))
     for {
-      broker <- Try(connectToBroker(brokerUri))
+      broker <- brokerConnFut
       results = for {shareId <- shareIds;
-                     res = { val share = broker.shareInfo(shareId)
-                             Try(broker.contract(makeOrder(share, share.curPrice * 1.0)))
-                     }
-      } yield res
+                     res = for {
+                       share <- futShr(broker)(shareId)
+                       order <- futOrd(share)(share.curPrice * 1.0)
+                     } yield broker.contract(order)
+      } yield res // result eines einzigen Versuchs
     } yield results
-    /* ENDE mein Code ENDE */
   }
+
   def apply(x: Int) = x match {
     case 1 => {
       println(buySharesSeq1("uri", "SAP"))
       println(buySharesSeq1("", "SAP"))
       println(buySharesSeq1("uri", "SA"))
-      // Success(Order(SAP,500.0,100))
-      // Failure(java.lang.Exception: connectToBroker)
-      // Failure(java.lang.Exception: shareInfo)
     }
     case 2 => {
-      println(buySharesSeq2("uri", "SAP", "SQP"))
+      println(buySharesSeq2("uri", "SAP", "SAP"))
       println(buySharesSeq2("", "SAP", "SAP"))
       println(buySharesSeq2("uri", "SAP", "SAP", "SA"))
-      // Success(ArrayBuffer(Success(Order(SAP,500.0,100)), Failure(java.lang.Exception: shareInfo)))
-      // Failure(java.lang.Exception: connectToBroker)
-      // Success(ArrayBuffer(Success(Order(SAP,500.0,100)), Success(Order(SAP,500.0,100)), Failure(java.lang.Exception: shareInfo)))
     }
     case 3 => {
-      println(buySharesSeq3("uri", "SAP", "SQP"))
-      println(buySharesSeq3("", "SAP", "SAP"))
-      println(buySharesSeq3("uri", "SAP", "SAP", "SA"))
-      // Success(ArrayBuffer(Success(Order(SAP,500.0,100)), Failure(java.lang.Exception: shareInfo)))
-      // Failure(java.lang.Exception: connectToBroker)
-      // Success(ArrayBuffer(Success(Order(SAP,500.0,100)), Success(Order(SAP,500.0,100)), Failure(java.lang.Exception: shareInfo)))
+      val resFut:Future[Seq[Future[Order]]] = buySharesAsync1("uri", "SAP", "SAP", "SA")
+      for {
+        ls <- resFut
+        d = ls.map{ x => await(x); println(x.value) }
+      } yield 0
     }
     case _ => ()
   }
 
+  def await[A](x: Future[A]) = {
+    Await.ready(x, Duration.Inf)
+    x
+  }
 }
 
 
