@@ -50,12 +50,12 @@ object myUtils {
 
     def millis[A](block: => A):String = {
       val (result,nanoTime)= resultAndNanos(block)
-      "time: "+ "~%.3fms".format((nanoTime/1000L)/1000.0)
+      "~%.3fms".format((nanoTime/1000L)/1000.0)
     }
 
     def resultAndMillis[A](block: => A):String = {
       val (result,nanoTime)= resultAndNanos(block)
-      result + "\ntime: "+ "~%.3fms".format((nanoTime/1000L)/1000.0)
+      result + "\n~%.3fms".format((nanoTime/1000L)/1000.0)
     }
 
   }
