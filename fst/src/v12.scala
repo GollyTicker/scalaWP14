@@ -7,7 +7,12 @@ object v12 {
   // Vortrag Finagle
   // Vortrag OpenCL
 
+  // Das PDF von Akka ist sehr gut aber auch sehr detailliert.
+
   def apply() = {
+
+    // Robots as Actors
+
 
   }
 
