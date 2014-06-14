@@ -35,8 +35,8 @@ object A11 {
     val fast2 = millis(m3 * m3)
 
     println("slow vs. fast:")
-    println(s"\t$slow1 vs. $fast1")
-    println(s"\t$slow2 vs. $fast2")
+    println(s"\tsmall: $slow1 vs. $fast1")
+    println(s"\tlarge: $slow2 vs. $fast2")
 
     // Results are in A11-out.txt
   }

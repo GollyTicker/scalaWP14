@@ -95,12 +95,8 @@ object A10 {
     }
     case 3 => {
       val resFut:Future[Seq[Future[Order]]] = buySharesAsync1("uri", "SAP", "SAP", "SA")
-      resFut map { ls =>
-        ls map { x => await(x)
-                         println(x.isCompleted)
-                         println(x.value) }
-      }
-      await(resFut)
+      await(resFut map { _ map { x => await(x);println(x.value) }
+      })
     }
     case _ => ()
   }
