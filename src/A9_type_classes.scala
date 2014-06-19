@@ -122,3 +122,36 @@ object baseUnitAufgabe {
     // https://github.com/milessabin/shapeless/wiki/Feature-overview:-shapeless-2.0.0#testing-for-non-compilation
   }
 }
+
+
+
+object Reverse {
+
+  trait Reverse[A] {
+    def reverse(a:A):A
+  }
+
+  def reverse[A:Reverse](x:A) = implicitly[Reverse[A]].reverse(x)
+
+  implicit val revUnit = new Reverse[Unit] { def reverse(x:Unit) = x }
+  implicit val revString = new Reverse[String] { def reverse(x:String) = x.reverse }
+  implicit val revInt = new Reverse[Int] {
+    def reverse(x:Int) = Integer.parseInt(Reverse.reverse(x.toString):String) // expliziter String typ notwendig, da sonst Compilerfehler
+  }
+}
+
+object R {
+  def main(args:Array[String]) {
+    import Reverse._
+    val ls = List(
+      reverse( () ),
+      reverse( 12431 ),
+      reverse( "HalloWelt!" )
+      // reverse( 1 :: 34 :: "Denkste!" :: () :: Nil ) )
+    )
+    ls foreach println
+
+  }
+}
+
+
