@@ -127,22 +127,26 @@ object baseUnitAufgabe {
 
 object Reverse {
   // alles Reversable A hat
-  trait Reverse[A] {
-    type B  // einen Reverse Typ (muss nicht gleich A sein, da z.B. Pair[A,B] => Pair[B,A])
+  trait Reverse[-A] {
+    type B  // einen Reverse Typ (muss nicht gleich A sein, da z.B. Pair[T1,T2] => Pair[T2,T1])
     def reverse(a:A):B  // eine reverse Methode
   }
+  // Instances are Unit, String, Int, ....
+
+  // Instances are List, Option, Array, ....
 
   // Zwei Arten der Definition:
 
   // 1. Haskell like Polymorhpic Constraint
   // def reverse[A:Reverse](x:A) = implicitly[Reverse[A]].reverse(x)
+
   // Aber in der Instance von Reverse[Int]: def reverse(x:Int):B = Integer.parseInt(Reverse.reverse(x.toString))
   // geht der return type String verloren.... muss dann manuell zu String gecastet werden.....
 
   // daher lieber
 
-  // 2. With Implicit Argument
-  def reverse[A](x:A)(implicit revA:Reverse[A]) = revA.reverse(x)
+  // 2. Mit Implicit Argument
+  def reverse[In <: A, A](x:In)(implicit revA:Reverse[A]) = revA.reverse(x)
 
 
   // Instances:
@@ -159,6 +163,7 @@ object Reverse {
   implicit val revInt = new Reverse[Int] {
     type B = Int
     def reverse(x:Int):B = Integer.parseInt(Reverse.reverse(x.toString))
+    // IDEA meldet fehler obwohl es richtig compiliert
   }
 
   implicit def revTuple2[T1,T2](implicit revT1:Reverse[T1], revT2:Reverse[T2]) =
@@ -172,17 +177,36 @@ object Reverse {
       }
   }
 
+  // ususal recursive reverse Lsit implementation
   implicit  def revList[A](implicit revA:Reverse[A]) = new Reverse[List[A]] {
     type B = List[revA.B]
     def reverse(ls:List[A]):B = {
       import Reverse.{reverse => innerRev}
-      ls.map( (x:A) => innerRev(x).asInstanceOf[revA.B] ).reverse
-    }
+      ls.map( (x:A) => innerRev(x) ).reverse
+    } // IDEA meldet fehler obwohl es richtig compiliert
   }
 
-  //implicit def rev
+  // higher-kind Reverse
+  // reversable type constructors F
+  trait ReverseK1[-F[_],A] {
+    type G[_]              // reversed type constructor
+    type BK1
+    def reverseK1(f:F[A]):BK1   // die reverse Methode
+  }
 
-  //implicit def revFunctor[F[_], A](implicit revF:Reverse[F], revA:Reverse[A]) = ???
+  def reverseK1
+    [InA <: A,F[_],A]
+    (f:F[InA])
+    (implicit revF:ReverseK1[F,A], revA:Reverse[A]) =
+      revF.reverseK1(f.asInstanceOf[F[A]])
+
+  // higher kind implementation.
+  implicit def revL[A](implicit revA:Reverse[A]) = new ReverseK1[List, A] {
+    type G[+_] = List[_]
+    type BK1 = G[revA.B]
+    def reverseK1(f: List[A]):BK1 = f.reverse.map(Reverse.reverse(_))
+  }
+
 }
 
 object R {
@@ -190,12 +214,16 @@ object R {
     import Reverse._
     val ls = List(
        reverse( () )
-      ,reverse( 12431 )
+      ,reverse( 12435 )
       ,reverse( "HalloWelt!" )
       ,reverse( ("Denkste!", 12345) )
       ,reverse( List( (123,"vfs"), (312, "sfv"), (15243, "awdrg") ) )
     )
     ls foreach println
+
+    println(reverseK1(List(123,456,789)))
+
+    println(reverse(List(123,456,789)))
   }
 }
 
