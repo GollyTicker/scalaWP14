@@ -128,15 +128,31 @@ object baseUnitAufgabe {
 object Reverse {
 
   trait Reverse[A] {
-    def reverse(a:A):A
+    type B
+    def reverse(a:A):B
   }
 
   def reverse[A:Reverse](x:A) = implicitly[Reverse[A]].reverse(x)
 
-  implicit val revUnit = new Reverse[Unit] { def reverse(x:Unit) = x }
-  implicit val revString = new Reverse[String] { def reverse(x:String) = x.reverse }
+  implicit val revUnit = new Reverse[Unit] {
+    type B = Unit
+    def reverse(x:Unit):B = x }
+  implicit val revString = new Reverse[String] {
+    type B = String
+    def reverse(x:String):B = x.reverse }
   implicit val revInt = new Reverse[Int] {
-    def reverse(x:Int) = Integer.parseInt(Reverse.reverse(x.toString):String) // expliziter String typ notwendig, da sonst Compilerfehler
+    type B = Int
+    def reverse(x:Int):B = Integer.parseInt(Reverse.reverse(x.toString).asInstanceOf[String]) // expliziter String typ notwendig, da sonst Compilerfehler
+  }
+  implicit def revTuple2[T1,T2](implicit revT1:Reverse[T1], revT2:Reverse[T2]) =
+    new Reverse[(T1,T2)] {
+      type B = (revT2.B, revT1.B) // swap positions
+      def reverse(t:(T1,T2)):B = {
+        import Reverse.{reverse => useReverse}
+        val t1 = useReverse(t._1).asInstanceOf[revT1.B] // leider muss gecastet werder....
+        val t2 = useReverse(t._2).asInstanceOf[revT2.B]
+        (t2,t1)
+      }
   }
 }
 
@@ -144,10 +160,11 @@ object R {
   def main(args:Array[String]) {
     import Reverse._
     val ls = List(
-      reverse( () ),
-      reverse( 12431 ),
-      reverse( "HalloWelt!" )
-      // reverse( 1 :: 34 :: "Denkste!" :: () :: Nil ) )
+       reverse( () )
+      ,reverse( 12431 )
+      ,reverse( "HalloWelt!" )
+      ,reverse( ("Denkste!", 12345) )
+      //,reverse( 1 :: 34 :: "Denkste!" :: () :: Nil ) )
     )
     ls foreach println
 
