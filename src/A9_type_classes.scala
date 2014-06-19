@@ -126,25 +126,39 @@ object baseUnitAufgabe {
 
 
 object Reverse {
-
+  // alles Reversable A hat
   trait Reverse[A] {
-    type B
-    def reverse(a:A):B
+    type B  // einen Reverse Typ (muss nicht gleich A sein, da z.B. Pair[A,B] => Pair[B,A])
+    def reverse(a:A):B  // eine reverse Methode
   }
 
-  def reverse[A:Reverse](x:A) = implicitly[Reverse[A]].reverse(x)
+  // Zwei Arten der Definition:
 
+  // 1. Haskell like Polymorhpic Constraint
+  // def reverse[A:Reverse](x:A) = implicitly[Reverse[A]].reverse(x)
+  // Aber in der Instance von Reverse[Int]: def reverse(x:Int):B = Integer.parseInt(Reverse.reverse(x.toString))
+  // geht der return type String verloren.... muss dann manuell zu String gecastet werden.....
+
+  // daher lieber
+
+  // 2. With Implicit Argument
+  def reverse[A](x:A)(implicit revA:Reverse[A]) = revA.reverse(x)
+
+
+  // Instances:
   implicit val revUnit = new Reverse[Unit] {
     type B = Unit
-    def reverse(x:Unit):B = x }
+    def reverse(x:Unit):B = x
+  }
 
   implicit val revString = new Reverse[String] {
     type B = String
-    def reverse(x:String):B = x.reverse }
+    def reverse(x:String):B = x.reverse // ist bereits in String implementiert
+  }
 
   implicit val revInt = new Reverse[Int] {
     type B = Int
-    def reverse(x:Int):B = Integer.parseInt(Reverse.reverse(x.toString).asInstanceOf[String]) // expliziter String typ notwendig, da sonst Compilerfehler
+    def reverse(x:Int):B = Integer.parseInt(Reverse.reverse(x.toString))
   }
 
   implicit def revTuple2[T1,T2](implicit revT1:Reverse[T1], revT2:Reverse[T2]) =
@@ -152,9 +166,9 @@ object Reverse {
       type B = (revT2.B, revT1.B) // swap positions
       def reverse(t:(T1,T2)):B = {
         import Reverse.{reverse => innerRev}  // avoiding recursive calling....
-        val t1 = innerRev(t._1).asInstanceOf[revT1.B] // leider muss gecastet werder....
-        val t2 = innerRev(t._2).asInstanceOf[revT2.B]
-        (t2,t1)
+        val t1 = innerRev(t._1)
+        val t2 = innerRev(t._2)
+        (t2,t1) // IDEA meldet fehler obwohl es richtig compiliert
       }
   }
 
@@ -165,6 +179,10 @@ object Reverse {
       ls.map( (x:A) => innerRev(x).asInstanceOf[revA.B] ).reverse
     }
   }
+
+  //implicit def rev
+
+  //implicit def revFunctor[F[_], A](implicit revF:Reverse[F], revA:Reverse[A]) = ???
 }
 
 object R {
